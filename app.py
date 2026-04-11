@@ -11,7 +11,13 @@ CORS(app)
 
 # Database Config
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+# On Vercel, the root filesystem is read-only. We must use /tmp if we need SQLite temporarily, 
+# although Firebase should be primary in production.
+if os.environ.get('VERCEL') == '1':
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/app.db'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+    
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -464,7 +470,10 @@ def delete_account():
 
 # Initialize DB
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Warning: Could not create SQLite database (expected if using Firebase on Vercel): {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
