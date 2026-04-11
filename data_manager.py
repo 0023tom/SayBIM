@@ -17,6 +17,17 @@ class UserWrapper:
             return getattr(self.data, name)
         if name in self.data:
             return self.data[name]
+            
+        # Treat known database fields as None if they are missing in the Firestore document
+        known_db_fields = {
+            'id', 'username', 'email', 'avatar', 'password_hash',
+            'xp', 'weekly_xp', 'level', 'hearts', 'diamonds', 'streak',
+            'last_streak_date', 'last_heart_update', 'last_weekly_reset',
+            'created_at'
+        }
+        if name in known_db_fields:
+            return None
+            
         raise AttributeError(f"'UserWrapper' object has no attribute '{name}'")
 
     def __setattr__(self, name, value):
