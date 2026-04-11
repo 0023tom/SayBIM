@@ -302,6 +302,12 @@ def get_quiz(lesson_id):
                 media_type = 'video' if ext == '.mp4' else 'image'
                 break
         
+        # Fallback for serverless environments (like Vercel) where os.path.exists 
+        # might fail if static files are not explicitly bundled in the lambda.
+        if not media_url:
+            media_url = f"/static/quiz_media/lesson{lesson_id}/{correct_answer}.jpg"
+            media_type = 'image'
+        
         questions.append({
             'id': idx + 1,
             'text': f'What is the sign for "{correct_answer}"?' if not media_url else "What does this sign mean?", 
