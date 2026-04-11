@@ -295,8 +295,12 @@ def get_quiz(lesson_id):
         # Search for any file in the specific lesson folder
         base_path = os.path.join(app.static_folder, 'quiz_media', f'lesson{lesson_id}')
         
+        # Ensure filename is safe and has no spaces/special chars
+        safe_name = correct_answer.replace(',', '').replace('(', '').replace(')', '')
+        safe_name = safe_name.replace(' ', '_').replace('__', '_').strip('_')
+
         for ext in ['.mp4', '.jpg', '.jpeg', '.png']:
-            filename = f"{correct_answer}{ext}"
+            filename = f"{safe_name}{ext}"
             if os.path.exists(os.path.join(base_path, filename)):
                 media_url = f"/static/quiz_media/lesson{lesson_id}/{filename}"
                 media_type = 'video' if ext == '.mp4' else 'image'
@@ -305,7 +309,7 @@ def get_quiz(lesson_id):
         # Fallback for serverless environments (like Vercel) where os.path.exists 
         # might fail if static files are not explicitly bundled in the lambda.
         if not media_url:
-            media_url = f"/static/quiz_media/lesson{lesson_id}/{correct_answer}.jpg"
+            media_url = f"/static/quiz_media/lesson{lesson_id}/{safe_name}.jpg"
             media_type = 'image'
         
         questions.append({
