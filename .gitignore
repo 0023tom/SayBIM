@@ -26,6 +26,7 @@ Logs/
 Logs_Hands/
 MP_Data/
 MP_Data_Hands/
+github_code.txt
 
 # Large Model Files
 # A_to_L_model_best.h5
