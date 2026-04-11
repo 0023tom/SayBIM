@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.venv
+.env
+.venv
+env/
+venv/
+ENV/
+
+# System Files
+.DS_Store
+Thumbs.db
+# IDEs
+.vscode/
+.idea/
+
+# Database and Secrets
+app.db
+firebase-adminsdk.json
+
+# Large Data & Logs
+Logs/
+Logs_Hands/
+MP_Data/
+MP_Data_Hands/
+
+# Large Model Files
+# A_to_L_model_best.h5
+# A_to_L_model_final.h5
+hand_model_best.h5
+hand_model_final.h5
+
+# Keep the web_model for the app
+!web_model/
+
+# Temporary Migration & Testing Scripts
+migrate*.py
+verify_setup.py
+
+# Unused/Legacy Training Directories
+Model/
+
+# Assistant Scratch Files
+scratch/

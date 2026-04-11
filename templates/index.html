@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SayBIM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Font Awesome for Icons (Placeholder CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- TensorFlow.js and MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="user-profile">
+            <div class="avatar" id="sidebar-avatar" style="overflow: hidden;">
+                {% if user and user.avatar %}
+                <img src="{{ user.avatar }}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                {{ user.username[0] | upper if user else 'U' }}
+                {% endif %}
+            </div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="user-name-display">{{ user.username if user else 'User' }}</div>
+                <div style="font-size: 0.8em; color: var(--text-secondary);" id="user-level-display">Level {{ user.level
+                    if user else '1' }}</div>
+            </div>
+        </div>
+
+
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="#" class="nav-link active">
+                    <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                    Lesson
+                </a>
+            </li>
+            <li class="nav-item" style="display: none;">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-dumbbell"></i></span>
+                    Challenge
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-trophy"></i></span>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
+                    Practice
+                </a>
+            </li>
+            <li class="nav-item" style="display: none;">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-store"></i></span>
+                    Shop
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    Setting
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--accent-red);">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Flash Messages Area -->
+        <div class="flash-messages-container" style="padding: 20px 50px 0 50px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 0;">
+                {{ message }}
+                <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Top Stats Bar -->
+        <header class="top-bar">
+            <!-- Progress could go here too, mimicking the image -->
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-icon" style="color: #ff9800;"><i class="fas fa-fire"></i></span>
+                    <span id="main-streak-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon" style="color: var(--accent-red);"><i class="fas fa-heart"></i></span>
+                    <span id="main-heart-count">5</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon" style="color: var(--accent-blue);"><i class="fas fa-gem"></i></span>
+                    <span id="main-diamond-count">1389</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <div class="content-area">
+            <!-- Lesson Section -->
+            <section id="lesson-section">
+                <h2 class="section-title">Your Learning Path</h2>
+
+                <div class="lesson-grid">
+                    <!-- Lesson 1 -->
+                    <div class="lesson-card" id="lesson-card-1" onclick="window.location.href='/quiz/1'">
+                        <div class="card-header">
+                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-1">Lesson 1</span>
+                            <i id="lesson-icon-1" class="fas fa-book-open" style="color: var(--accent-blue);"></i>
+                        </div>
+                        <div class="lesson-title">Basic Greetings</div>
+                        <div class="lesson-desc">Learn essential greetings and introductions</div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar-1" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lesson 2 -->
+                    <div class="lesson-card" id="lesson-card-2" onclick="window.location.href='/quiz/2'">
+                        <div class="card-header">
+                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-2">Lesson 2</span>
+                            <i id="lesson-icon-2" class="fas fa-book-open" style="color: var(--accent-blue);"></i>
+                        </div>
+                        <div class="lesson-title">Numbers & Counting</div>
+                        <div class="lesson-desc">Master numbers 1-100</div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar-2" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Lessons -->
+                    <div style="display: none;">
+                        <!-- Lesson 3 (Camera Practice) -->
+                        <div class="lesson-card" id="lesson-card-3" onclick="window.location.href='/quiz/3'">
+                            <div class="card-header">
+                                <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-3">Lesson 3</span>
+                                <i id="lesson-icon-3" class="fas fa-camera" style="color: var(--accent-blue);"></i>
+                            </div>
+                            <div class="lesson-title">Gesture Practice</div>
+                            <div class="lesson-desc">Test your skills with the camera</div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-bar-3" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Lesson 4 -->
+                        <div class="lesson-card" id="lesson-card-4" onclick="window.location.href='/quiz/4'">
+                            <div class="card-header">
+                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-4">Lesson 4</span>
+                                <i id="lesson-icon-4" class="fas fa-lock" style="color: var(--text-secondary);"></i>
+                            </div>
+                            <div class="lesson-title">Foods & Drinks</div>
+                            <div class="lesson-desc">Vocabulary for food and beverages</div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-bar-4" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Lesson 5 -->
+                        <div class="lesson-card" id="lesson-card-5" onclick="window.location.href='/quiz/5'">
+                            <div class="card-header">
+                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-5">Lesson 5</span>
+                                <i id="lesson-icon-5" class="fas fa-lock" style="color: var(--text-secondary);"></i>
+                            </div>
+                            <div class="lesson-title">Family & Friends</div>
+                            <div class="lesson-desc">Talk about relationships and people</div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-bar-5" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Lesson 6 -->
+                        <div class="lesson-card" id="lesson-card-6" onclick="window.location.href='/quiz/6'">
+                            <div class="card-header">
+                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-6">Lesson 6</span>
+                                <i id="lesson-icon-6" class="fas fa-lock" style="color: var(--text-secondary);"></i>
+                            </div>
+                            <div class="lesson-title">Daily Routine</div>
+                            <div class="lesson-desc">Describe your everyday activities</div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-bar-6" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- Leaderboard Section -->
+            <section id="leaderboard-section" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+                    <h2 class="section-title" style="margin-bottom: 0;">Top Learners</h2>
+                    <div style="color: var(--text-secondary); font-size: 0.9em; font-weight: bold;">
+                        <i class="fas fa-clock" style="margin-right: 5px; color: var(--accent-blue);"></i>
+                        Resets in: <span id="leaderboard-timer" style="color: var(--accent-blue);">--d --h --m</span>
+                    </div>
+                </div>
+                <div class="leaderboard-container"
+                    style="background: white; padding: 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft);">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #eee; text-transform: uppercase; font-size: 1em;">
+                                <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Rank</th>
+                                <th style="text-align: left; padding: 10px; color: var(--text-secondary);">User</th>
+                                <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Level</th>
+                                <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Weekly XP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Challenge Section -->
+            <section id="challenge-section" style="display: none; height: 60vh; text-align: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                    <i class="fas fa-tools" style="font-size: 5em; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                    <h2 class="section-title">Challenge Mode</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.2em;">This feature is currently under development. Stay tuned for exciting challenges!</p>
+                </div>
+            </section>
+
+            <!-- Shop Section -->
+            <section id="shop-section" style="display: none; height: 60vh; text-align: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                    <i class="fas fa-hammer" style="font-size: 5em; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                    <h2 class="section-title">SayBIM Shop</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.2em;">The shop is under development. Soon you'll be able to spend your gems here!</p>
+                </div>
+            </section>
+            
+            
+            <!-- Settings Section -->
+            <section id="setting-section" style="display: none;">
+                <h2 class="section-title">Settings</h2>
+                
+                <!-- Primary Settings Menu (Restructured Left-Right) -->
+                <div id="settings-main-menu" style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    <!-- Account Column -->
+                    <div style="flex: 1; min-width: 320px;">
+                        <div class="settings-group-title">
+                            <i class="fas fa-user-circle" style="color: var(--accent-blue);"></i>
+                            Account
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Preferences Card -->
+                            <div class="lesson-card" onclick="showSubMenu('preferences')" style="margin: 0; width: 100%; box-sizing: border-box;">
+                                <div class="card-header">
+                                    <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;">Settings</span>
+                                    <i class="fas fa-sliders-h" style="color: var(--accent-blue); font-size: 1.25em;"></i>
+                                </div>
+                                <div class="lesson-title">Preferences</div>
+                                <div class="lesson-desc">Configure sound effects and camera feature permissions.</div>
+                                <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--accent-blue); font-weight: 800; font-size: 0.9em;">
+                                    Configure Now <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <!-- Profile Card -->
+                            <div class="lesson-card" onclick="showSubMenu('profile')" style="margin: 0; width: 100%; box-sizing: border-box;">
+                                <div class="card-header">
+                                    <span style="font-size: 0.8em; color: var(--accent-green); font-weight: bold;">Profile</span>
+                                    <i class="fas fa-user-edit" style="color: var(--accent-green); font-size: 1.25em;"></i>
+                                </div>
+                                <div class="lesson-title">My Profile</div>
+                                <div class="lesson-desc">Update your personal information, avatar, and password.</div>
+                                <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--accent-green); font-weight: 800; font-size: 0.9em;">
+                                    Edit Profile <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Column -->
+                    <div style="flex: 1; min-width: 320px;">
+                        <div class="settings-group-title">
+                            <i class="fas fa-headset" style="color: var(--accent-yellow);"></i>
+                            Support
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Feedback Card -->
+                            <div class="lesson-card" onclick="openFeedbackModal()" style="margin: 0; width: 100%; box-sizing: border-box;">
+                                <div class="card-header">
+                                    <span style="font-size: 0.8em; color: var(--accent-yellow); font-weight: bold;">Helping</span>
+                                    <i class="fas fa-comment-dots" style="color: var(--accent-yellow); font-size: 1.25em;"></i>
+                                </div>
+                                <div class="lesson-title">Send Feedback</div>
+                                <div class="lesson-desc">Help us improve the learning experience with your suggestions.</div>
+                                <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--accent-yellow); font-weight: 800; font-size: 0.9em;">
+                                    Share Thoughts <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Sub-menu -->
+                <div id="preferences-menu" style="display: none;" class="settings-sub-menu">
+                    <div class="settings-back-btn" onclick="showSubMenu('main')">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Settings
+                    </div>
+                    
+                    <h3 style="margin-bottom: 25px; font-weight: 800; color: var(--text-primary);">Preferences</h3>
+                    
+                    <div class="settings-list" style="background: #f8faff; border-radius: 16px; padding: 10px;">
+                        <!-- Sound Effects Toggle -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #edf2f7;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="settings-icon" style="background: white;"><i class="fas fa-volume-up"></i></div>
+                                <div style="font-weight: 700;">Sound Effects</div>
+                            </div>
+                            <label class="premium-switch">
+                                <input type="checkbox" id="sound-toggle" checked>
+                                <span class="premium-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <!-- Camera Toggle -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="settings-icon" style="background: white;"><i class="fas fa-video"></i></div>
+                                <div style="font-weight: 700;">Camera Features</div>
+                            </div>
+                            <label class="premium-switch">
+                                <input type="checkbox" id="camera-toggle" checked>
+                                <span class="premium-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Sub-menu -->
+                <div id="profile-menu" style="display: none;" class="settings-sub-menu">
+                    <div class="settings-back-btn" onclick="showSubMenu('main')">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Settings
+                    </div>
+
+                    <h3 style="margin-bottom: 25px; font-weight: 800; color: var(--text-primary);">Profile Information</h3>
+                    
+                    <form id="profile-form" onsubmit="updateProfile(event)" class="profile-card">
+                        <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
+                            <div id="profile-avatar-preview" style="width: 100px; height: 100px; border-radius: 20px; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 3em; overflow: hidden; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);">
+                                {% if user and user.avatar %}
+                                <img src="{{ user.avatar }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                {{ user.username[0] | upper if user else 'U' }}
+                                {% endif %}
+                            </div>
+                            <label for="avatar-upload" style="cursor: pointer; color: var(--accent-blue); font-weight: 800; font-size: 0.95rem; background: #ebf4ff; padding: 8px 16px; border-radius: 20px;">
+                                <i class="fas fa-camera" style="margin-right: 5px;"></i> Update Avatar
+                            </label>
+                            <input type="file" id="avatar-upload" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                        </div>
+
+                        <div class="setting-form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" class="setting-input" value="{{ user.username if user else '' }}" placeholder="Enter your username">
+                        </div>
+
+                        <div class="setting-form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" class="setting-input" value="{{ user.email if user and user.email else '' }}" placeholder="Enter your email">
+                        </div>
+
+                        <div class="setting-form-group">
+                            <label>New Password</label>
+                            <input type="password" name="password" class="setting-input" placeholder="Leave blank to keep current">
+                        </div>
+
+                        <button type="submit" class="auth-btn" style="margin-top: 20px;">
+                            Save Profile Changes
+                        </button>
+                    </form>
+
+                    <div class="danger-zone">
+                        <div class="danger-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Danger Zone
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.95rem; font-weight: 600;">Once you delete your account, there is no going back. Please be certain.</p>
+                        <button onclick="confirmDeleteAccount()" style="width: 100%; padding: 14px; border: 2px solid #fc8181; background: white; color: #c53030; border-radius: var(--radius-md); font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">
+                            Permanently Delete My Account
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Quiz Modal has been moved to quiz_page.html structure explicitly -->
+
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="modal-close" onclick="closeModal('camera-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 style="margin-bottom: 20px;">Gesture Verification</h3>
+
+            <div
+                style="position: relative; width: 100%; max-width: 600px; margin: 0 auto; background: #000; border-radius: 12px; overflow: hidden;">
+                <!-- Video Element -->
+                <video id="webcam" autoplay playsinline style="width: 100%; height: auto; display: block;"></video>
+
+                <!-- Overlay for feedback -->
+                <div id="camera-overlay"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; pointer-events: none;">
+                    <div
+                        style="border: 2px dashed rgba(255,255,255,0.5); width: 60%; height: 70%; border-radius: 20px;">
+                    </div>
+                </div>
+            </div>
+
+            <p id="camera-prompt" style="margin-top: 20px; color: var(--text-secondary);">Position your hand in the
+                frame and sign "Hello"</p>
+
+            <button class="quiz-btn" onclick="verifyGesture()"
+                style="margin-top: 20px; background: var(--accent-blue); color: white; border: none; width: 200px;">
+                <i class="fas fa-check-circle"></i> Verify Sign
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div style="font-size: 3em; color: var(--text-secondary); margin-bottom: 20px;">
+                <i class="fas fa-heart-broken"></i>
+            </div>
+            <h2 style="color: var(--text-primary);">Out of Hearts!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">You answered incorrectly too many times.
+                Refill hearts to continue?</p>
+
+            <button class="quiz-btn" onclick="refillHearts()"
+                style="width: 100%; background: var(--accent-blue); color: white; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-gem"></i> Pay 100 Gems
+            </button>
+            <button class="quiz-btn" onclick="quitLesson()"
+                style="width: 100%; border: 2px solid #eee; color: var(--text-secondary);">
+                Quit Lesson
+            </button>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" onclick="closeModal('feedback-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 style="margin-bottom: 20px;">We Value Your Feedback</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Let us know how we can improve SayBIM!</p>
+            <textarea id="feedback-text" rows="4" style="width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 20px; font-family: inherit; resize: vertical;" placeholder="Type your feedback here..."></textarea>
+            <button class="quiz-btn" onclick="submitFeedback()" style="width: 100%; background: var(--accent-blue); color: white; border: none; padding: 12px; font-size: 1.1em; border-radius: 8px;">
+                Submit Feedback
+            </button>
+        </div>
+    </div>
+
+    <!-- Hint Modal (Optional / Dynamic) -->
+    <div id="hint-popup"
+        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 101; display: none; text-align: center;">
+        <h4>Hint</h4>
+        <div
+            style="width: 100px; height: 100px; background: #eee; margin: 10px auto; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-hand-spock" style="font-size: 2em;"></i>
+        </div>
+        <p>Use the 'Y' handshape.</p>
+        <button onclick="toggleHint()"
+            style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">Ok</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
