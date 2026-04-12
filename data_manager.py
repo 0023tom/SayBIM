@@ -23,7 +23,7 @@ class UserWrapper:
             'id', 'username', 'email', 'avatar', 'password_hash',
             'xp', 'weekly_xp', 'level', 'hearts', 'diamonds', 'streak',
             'last_streak_date', 'last_heart_update', 'last_weekly_reset',
-            'created_at'
+            'created_at', 'topic_progress'
         }
         if name in known_db_fields:
             return None
@@ -66,6 +66,7 @@ class UserWrapper:
             'hearts': hearts,
             'diamonds': self.data.get('diamonds', 0),
             'streak': self.data.get('streak', 0),
+            'topic_progress': self.data.get('topic_progress', '{}'),
             'next_heart_in_seconds': next_heart_in_seconds
         }
 

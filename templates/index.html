@@ -32,6 +32,16 @@
                 <div style="font-weight: bold;" id="user-name-display">{{ user.username if user else 'User' }}</div>
                 <div style="font-size: 0.8em; color: var(--text-secondary);" id="user-level-display">Level {{ user.level
                     if user else '1' }}</div>
+                
+                <!-- Sidebar XP Bar -->
+                <div class="sidebar-xp-container" style="margin-top: 8px;">
+                    <div class="sidebar-xp-bar">
+                        <div id="sidebar-xp-fill" class="sidebar-xp-fill" style="width: 0%;"></div>
+                    </div>
+                    <div id="sidebar-xp-text" style="font-size: 0.7em; color: var(--text-secondary); margin-top: 3px;">
+                        0 / 100 XP
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -125,10 +135,10 @@
                 <h2 class="section-title">Your Learning Path</h2>
 
                 <div class="lesson-grid">
-                    <!-- Lesson 1 -->
-                    <div class="lesson-card" id="lesson-card-1" onclick="window.location.href='/quiz/1'">
+                    <!-- Topic 1 -->
+                    <div class="lesson-card" id="lesson-card-1" onclick="window.location.href='/topic/1'">
                         <div class="card-header">
-                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-1">Lesson 1</span>
+                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-1">Topic 1</span>
                             <i id="lesson-icon-1" class="fas fa-book-open" style="color: var(--accent-blue);"></i>
                         </div>
                         <div class="lesson-title">Basic Greetings</div>
@@ -138,71 +148,49 @@
                         </div>
                     </div>
 
-                    <!-- Lesson 2 -->
-                    <div class="lesson-card" id="lesson-card-2" onclick="window.location.href='/quiz/2'">
+                    <!-- Topic 2 -->
+                    <div class="lesson-card" id="lesson-card-2" onclick="window.location.href='/topic/2'">
                         <div class="card-header">
-                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-2">Lesson 2</span>
+                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-2">Topic 2</span>
                             <i id="lesson-icon-2" class="fas fa-book-open" style="color: var(--accent-blue);"></i>
                         </div>
-                        <div class="lesson-title">Numbers & Counting</div>
-                        <div class="lesson-desc">Master numbers 1-100</div>
+                        <div class="lesson-title">Self-Identity & The Alphabet</div>
+                        <div class="lesson-desc">Learn the art of introducing yourself and spelling with confidence.</div>
                         <div class="progress-bar-bg">
                             <div class="progress-bar-fill" id="progress-bar-2" style="width: 0%;"></div>
                         </div>
                     </div>
 
-                    <!-- Hidden Lessons -->
-                    <div style="display: none;">
-                        <!-- Lesson 3 (Camera Practice) -->
-                        <div class="lesson-card" id="lesson-card-3" onclick="window.location.href='/quiz/3'">
-                            <div class="card-header">
-                                <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-3">Lesson 3</span>
-                                <i id="lesson-icon-3" class="fas fa-camera" style="color: var(--accent-blue);"></i>
-                            </div>
-                            <div class="lesson-title">Gesture Practice</div>
-                            <div class="lesson-desc">Test your skills with the camera</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="progress-bar-3" style="width: 0%;"></div>
-                            </div>
+                </div>
+            </section>
+            
+            <!-- Practice Section -->
+            <section id="practice-section" style="display: none;">
+                <h2 class="section-title">Interactive Practice</h2>
+                <div class="lesson-grid">
+                    <!-- Alphabets Card -->
+                    <div class="lesson-card" onclick="window.location.href='/practice?type=alphabets'">
+                        <div class="card-header">
+                            <span style="font-size: 0.8em; color: #FF6B6B; font-weight: bold;">Step 1</span>
+                            <i class="fas fa-font" style="color: #FF6B6B;"></i>
                         </div>
-
-                        <!-- Lesson 4 -->
-                        <div class="lesson-card" id="lesson-card-4" onclick="window.location.href='/quiz/4'">
-                            <div class="card-header">
-                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-4">Lesson 4</span>
-                                <i id="lesson-icon-4" class="fas fa-lock" style="color: var(--text-secondary);"></i>
-                            </div>
-                            <div class="lesson-title">Foods & Drinks</div>
-                            <div class="lesson-desc">Vocabulary for food and beverages</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="progress-bar-4" style="width: 0%;"></div>
-                            </div>
+                        <div class="lesson-title">ASL Alphabets</div>
+                        <div class="lesson-desc">Practice signs from A to L with real-time AI recognition.</div>
+                        <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: #FF6B6B; font-weight: 800; font-size: 0.9em;">
+                            Master A to L <i class="fas fa-arrow-right"></i>
                         </div>
+                    </div>
 
-                        <!-- Lesson 5 -->
-                        <div class="lesson-card" id="lesson-card-5" onclick="window.location.href='/quiz/5'">
-                            <div class="card-header">
-                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-5">Lesson 5</span>
-                                <i id="lesson-icon-5" class="fas fa-lock" style="color: var(--text-secondary);"></i>
-                            </div>
-                            <div class="lesson-title">Family & Friends</div>
-                            <div class="lesson-desc">Talk about relationships and people</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="progress-bar-5" style="width: 0%;"></div>
-                            </div>
+                    <!-- Numbers Card -->
+                    <div class="lesson-card" onclick="window.location.href='/practice?type=numbers'">
+                        <div class="card-header">
+                            <span style="font-size: 0.8em; color: #48BB78; font-weight: bold;">Step 2</span>
+                            <i class="fas fa-sort-numeric-up" style="color: #48BB78;"></i>
                         </div>
-
-                        <!-- Lesson 6 -->
-                        <div class="lesson-card" id="lesson-card-6" onclick="window.location.href='/quiz/6'">
-                            <div class="card-header">
-                                <span style="font-size: 0.8em; color: var(--text-secondary); font-weight: bold;" id="lesson-text-6">Lesson 6</span>
-                                <i id="lesson-icon-6" class="fas fa-lock" style="color: var(--text-secondary);"></i>
-                            </div>
-                            <div class="lesson-title">Daily Routine</div>
-                            <div class="lesson-desc">Describe your everyday activities</div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" id="progress-bar-6" style="width: 0%;"></div>
-                            </div>
+                        <div class="lesson-title">Basic Numbers</div>
+                        <div class="lesson-desc">Practice counting from 1 to 10 with interactive feedback.</div>
+                        <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: #48BB78; font-weight: 800; font-size: 0.9em;">
+                            Learn 1 to 10 <i class="fas fa-arrow-right"></i>
                         </div>
                     </div>
                 </div>

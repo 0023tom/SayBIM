@@ -10,8 +10,14 @@ let gameState = {
     currentQuestionIndex: 0,
     totalQuestions: 10,
     questions: [],
-    username: ''
+    questions: [],
+    username: '',
+    detectionPaused: true, // New: Pause AI until button clicked
+    targetLetter: null     // New: Track what we are looking for
 };
+
+let quizTimerInterval = null;
+let currentRemainingTime = 180;
 
 let heartTimer = null;
 
@@ -171,45 +177,56 @@ const practiceConfig = {
     school: []
 };
 
-// Navigation
-let userProgress = {
-    1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0
-};
-
 function renderLessonCards() {
-    for (let i = 1; i <= 6; i++) {
-        const card = document.getElementById(`lesson-card-${i}`);
-        const progressBar = document.getElementById(`progress-bar-${i}`);
-        const icon = document.getElementById(`lesson-icon-${i}`);
-        const text = document.getElementById(`lesson-text-${i}`);
-        if (!card) continue;
-        
-        let progress = userProgress[i] || 0;
-        progressBar.style.width = `${(progress / 5) * 100}%`;
-        
-        let isUnlocked = (i === 1) || (userProgress[i-1] >= 5);
-        
-        if (isUnlocked) {
-            card.classList.remove('locked');
-            card.style.pointerEvents = "auto";
-            if (icon) {
-                if (i === 3) {
-                    icon.className = 'fas fa-camera';
-                } else {
-                    icon.className = 'fas fa-book-open';
-                }
-                icon.style.color = 'var(--accent-blue)';
-            }
-            if (text) text.style.color = 'var(--accent-blue)';
+    let t1Prog = gameState.topicProgress ? (gameState.topicProgress['1'] || 1) : 1;
+    let t2Prog = gameState.topicProgress ? (gameState.topicProgress['2'] || 1) : 1;
+    
+    let bar1 = document.getElementById('progress-bar-1');
+    let card1 = document.getElementById('lesson-card-1');
+    if (bar1) {
+        if (t1Prog > 8) {
+            bar1.style.width = '100%';
+            bar1.style.background = 'var(--accent-green)';
         } else {
-            card.classList.add('locked');
-            card.style.pointerEvents = "none";
-            if (icon) {
-                 icon.className = 'fas fa-lock';
-                 icon.style.color = 'var(--text-secondary)';
-            }
-            if (text) text.style.color = 'var(--text-secondary)';
+            bar1.style.width = `${((t1Prog - 1) / 8) * 100}%`;
         }
+    }
+
+    let bar2 = document.getElementById('progress-bar-2');
+    let card2 = document.getElementById('lesson-card-2');
+    let icon2 = document.getElementById('lesson-icon-2');
+    let text2 = document.getElementById('lesson-text-2');
+    if (bar2) {
+        if (t2Prog > 9) {
+            bar2.style.width = '100%';
+            bar2.style.background = 'var(--accent-green)';
+        } else {
+            bar2.style.width = `${((t2Prog - 1) / 9) * 100}%`;
+        }
+    }
+
+    // Topic 1 Unlocks Topic 2
+    let isT2Unlocked = t1Prog > 8;
+    if (isT2Unlocked) {
+        if (card2) {
+            card2.classList.remove('locked');
+            card2.style.pointerEvents = "auto";
+        }
+        if (icon2) {
+            icon2.className = 'fas fa-book-open';
+            icon2.style.color = 'var(--accent-blue)';
+        }
+        if (text2) text2.style.color = 'var(--accent-blue)';
+    } else {
+        if (card2) {
+            card2.classList.add('locked');
+            card2.style.pointerEvents = "none";
+        }
+        if (icon2) {
+            icon2.className = 'fas fa-lock';
+            icon2.style.color = 'var(--text-secondary)';
+        }
+        if (text2) text2.style.color = 'var(--text-secondary)';
     }
 }
 
@@ -233,10 +250,7 @@ function switchSection(section) {
     });
 
     if (window.CURRENT_PAGE_TYPE !== 'quiz' && window.CURRENT_PAGE_TYPE !== 'practice') {
-        if (section === 'practice') {
-            window.location.href = '/practice';
-            return;
-        }
+
         showSection(section);
         if (section === 'leaderboard') fetchLeaderboard();
         if (section === 'setting') showSubMenu('main');
@@ -306,59 +320,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 3. Load Model (Crucial for Practice and Quizzes)
     loadModel();
+
+    // 4. Handle Practice URL Parameters
+    if (window.CURRENT_PAGE_TYPE === 'practice') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type') || 'alphabets';
+        renderPracticeButtons(type);
+        
+        // Immediate Number Notice: If numbers, show the overlay right away
+        if (type === 'numbers') {
+            const maintenanceOverlay = document.getElementById('maintenance-overlay');
+            if (maintenanceOverlay) maintenanceOverlay.style.display = 'flex';
+        }
+    }
 });
+
+function updateGameState(userData) {
+    if (!userData) return;
+    gameState.hearts = userData.hearts;
+    gameState.diamonds = userData.diamonds;
+    gameState.streak = userData.streak;
+    gameState.level = userData.level;
+    gameState.xp = userData.xp;
+    gameState.nextHeartIn = userData.next_heart_in_seconds || 0;
+    gameState.username = userData.username;
+    if (userData.topic_progress) {
+        gameState.topicProgress = typeof userData.topic_progress === 'string' ? JSON.parse(userData.topic_progress) : userData.topic_progress;
+    }
+    updateDashboardStats();
+}
 
 async function initGame() {
     try {
-        let quizUrl = '/api/quiz/1';
-        if (window.CURRENT_PAGE_TYPE === 'quiz') {
-            quizUrl = `/api/quiz/${window.CURRENT_LESSON_ID || 1}`;
-        }
-
-        const [userRes, quizRes] = await Promise.all([
-            fetch('/api/user'),
-            fetch(quizUrl)
-        ]);
+        // 1. Fetch User Data (Always needed)
+        const userRes = await fetch('/api/user');
         const userData = await userRes.json();
-        const quizData = await quizRes.json();
-
-        gameState.hearts = userData.hearts;
-        gameState.diamonds = userData.diamonds;
-        gameState.streak = userData.streak;
-        gameState.nextHeartIn = userData.next_heart_in_seconds || 0;
-        gameState.username = userData.username;
-        
-        let stored = localStorage.getItem('saybim_lesson_progress_' + userData.username);
-        if (stored) {
-            userProgress = JSON.parse(stored);
-        } else {
-            userProgress = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-        }
-        
-        gameState.questions = quizData;
-        gameState.totalQuestions = quizData.length;
+        updateGameState(userData);
 
         if (window.CURRENT_PAGE_TYPE !== 'quiz') {
             const nameDisplay = document.getElementById('user-name-display');
-            const levelDisplay = document.getElementById('user-level-display');
-            if (nameDisplay) nameDisplay.innerText = userData.username;
-            if (levelDisplay) levelDisplay.innerText = `Level ${userData.level}`;
-            updateDashboardStats();
+            if (nameDisplay) nameDisplay.innerText = gameState.username;
             startHeartTimer();
-        } else {
-            // It's a quiz page
-            gameState.currentLessonId = window.CURRENT_LESSON_ID;
-            
-            // Check if it's camera lesson (Lesson 3)
-            if (gameState.currentLessonId === 3) {
-                startPractice('alphabets');
-                const camModal = document.getElementById('camera-modal');
-                if(camModal) camModal.style.display = 'flex';
-            } else {
-                gameState.currentQuestionIndex = 0;
-                updateQuizUI();
-            }
+            return; // Exit early if not a quiz
         }
+
+        // 2. Fetch Quiz Data (Only on quiz page)
+        const quizUrl = `/api/quiz/${window.CURRENT_TOPIC_ID || 1}/${window.CURRENT_LESSON_ID || 1}`;
+        const quizRes = await fetch(quizUrl);
+        const quizData = await quizRes.json();
+
+        gameState.questions = quizData;
+        gameState.totalQuestions = quizData.length;
+        gameState.currentLessonId = window.CURRENT_LESSON_ID;
+        gameState.currentTopicId = window.CURRENT_TOPIC_ID;
+        gameState.currentQuestionIndex = 0;
+
+        // Mastery Quizzes: Topic 1 (L8) or Topic 2 (L9)
+        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || 
+            (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+            currentRemainingTime = 180;
+            startQuizTimer();
+        }
+        updateQuizUI();
 
     } catch (err) {
         console.error("Failed to init game:", err);
@@ -434,10 +457,6 @@ function startLeaderboardTimer() {
 
 function openLesson(lessonId, lessonName) {
     gameState.currentLessonId = lessonId;
-    if (lessonId === 3 || lessonName === 'Gesture Practice') {
-        startPractice('alphabets');
-        return;
-    }
     gameState.currentQuestionIndex = 0;
     if (gameState.hearts <= 0) {
         showGameOver();
@@ -450,6 +469,69 @@ function openLesson(lessonId, lessonName) {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.remove('active');
+}
+
+function renderPracticeButtons(type) {
+    const container = document.getElementById('practice-target-btns');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const items = type === 'alphabets' 
+        ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+        : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+    items.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-btn';
+        btn.style.padding = '15px';
+        btn.innerText = item;
+        btn.onclick = () => {
+            // Remove previous selections
+            container.querySelectorAll('.quiz-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            const maintenanceOverlay = document.getElementById('maintenance-overlay');
+            const cameraIndicator = document.getElementById('camera-active-status');
+
+            if (type === 'numbers') {
+                if (maintenanceOverlay) maintenanceOverlay.style.display = 'flex';
+                if (cameraIndicator) cameraIndicator.style.display = 'none';
+                
+                // Do not open camera
+                gameState.targetLetter = null;
+                gameState.detectionPaused = true;
+                
+                // If camera is running, stop it
+                if (camera) {
+                    camera.stop();
+                    const videoElement = document.getElementById('webcam');
+                    if (videoElement) videoElement.style.opacity = '0.3';
+                }
+            } else {
+                if (maintenanceOverlay) maintenanceOverlay.style.display = 'none';
+                startSinglePractice(type, item);
+            }
+        };
+        container.appendChild(btn);
+    });
+}
+
+function startSinglePractice(category, target) {
+    gameState.targetLetter = target;
+    gameState.detectionPaused = false;
+    
+    // UI Updates
+    const placeholder = document.getElementById('practice-placeholder');
+    const cameraContainer = document.getElementById('practice-camera-container');
+    const maintenanceOverlay = document.getElementById('maintenance-overlay');
+
+    // On standalone page, we stay in the same view but update components
+    if (placeholder) placeholder.style.display = 'none';
+    if (cameraContainer) cameraContainer.style.display = 'block';
+    if (maintenanceOverlay) maintenanceOverlay.style.display = 'none'; // Hide overlay when active
+    
+    // Ensure camera is open
+    openCameraModal(`Sign the letter/number: ${target}`);
 }
 
 function startPractice(category) {
@@ -535,6 +617,8 @@ function updateQuizUI() {
     const progress = ((gameState.currentQuestionIndex + 1) / gameState.totalQuestions) * 100;
     document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
     document.getElementById('question-counter').innerText = gameState.currentQuestionIndex + 1;
+    const totalQEl = document.getElementById('total-questions');
+    if (totalQEl) totalQEl.innerText = gameState.totalQuestions;
     document.getElementById('heart-count').innerText = gameState.hearts;
 
     // Update Question
@@ -544,20 +628,76 @@ function updateQuizUI() {
     // Update Options
     const optionsContainer = document.querySelector('.quiz-options');
     optionsContainer.innerHTML = ''; // Clear previous options
+    
+    // Reset sequence for new questions
+    if (!gameState.selectedSequence) gameState.selectedSequence = [];
+    gameState.selectedSequence = [];
+    
+    // Check if we should use a 4-column layout
+    let useFourColumns = false;
+    if (!currentQ.media_url && currentQ.options.length === 4) {
+        // If it's a visual option puzzle, make it 4 in a row
+        useFourColumns = currentQ.options.some(opt => typeof opt !== 'string' && opt.media_url);
+    }
+    optionsContainer.style.gridTemplateColumns = useFourColumns ? 'repeat(4, 1fr)' : '';
 
-    currentQ.options.forEach(opt => {
+    currentQ.options.forEach((optObj, idx) => {
+        // optObj can be a string (from generic quiz) or an object {text, media_url}
+        let text = typeof optObj === 'string' ? optObj : optObj.text;
+        let media_url = typeof optObj === 'string' ? null : optObj.media_url;
+
         const btn = document.createElement('button');
         btn.className = 'quiz-btn';
-        btn.innerText = opt;
-        btn.onclick = () => checkAnswer(btn, opt);
+        btn.dataset.index = idx;
+        
+        let innerHTML = '';
+        if (media_url && !currentQ.media_url) {
+            btn.style.display = 'flex';
+            btn.style.flexDirection = 'column';
+            btn.style.alignItems = 'center';
+            btn.style.justifyContent = 'center';
+            btn.style.gap = '15px';
+            innerHTML += `<img src="${media_url}" style="width: 140px; height: 140px; object-fit: contain; border-radius: 8px;">`;
+            if (!currentQ.hide_option_text) {
+                innerHTML += `<span style="font-size: 1rem; text-align: center;">${text}</span>`;
+            }
+        } else {
+            innerHTML = text;
+        }
+        
+        btn.innerHTML = innerHTML;
+        
+        if (currentQ.type === 'Sequence') {
+            btn.onclick = () => handleSequenceClick(btn, text);
+        } else {
+            btn.onclick = () => checkAnswer(btn, text);
+        }
         optionsContainer.appendChild(btn);
     });
+
+    // Add Confirm/Clear Buttons for Sequence mode
+    if (currentQ.type === 'Sequence') {
+        const confirmBtn = document.createElement('button');
+        confirmBtn.id = 'confirm-sequence-btn';
+        confirmBtn.className = 'confirm-sequence-btn';
+        confirmBtn.innerText = 'Confirm Selection';
+        confirmBtn.disabled = true;
+        confirmBtn.onclick = () => checkSequenceAnswer();
+        optionsContainer.appendChild(confirmBtn);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'clear-sequence-btn';
+        clearBtn.innerHTML = '<i class="fas fa-undo"></i> Clear Selection';
+        clearBtn.onclick = () => resetSequence();
+        optionsContainer.appendChild(clearBtn);
+    }
 
     // Update Image/Video
     const imageContainer = document.querySelector('.quiz-image');
     imageContainer.innerHTML = ''; // Clear existing
 
     if (currentQ.media_url) {
+        imageContainer.style.display = 'flex';
         if (currentQ.media_type === 'video') {
             const video = document.createElement('video');
             video.src = currentQ.media_url;
@@ -581,10 +721,8 @@ function updateQuizUI() {
         imageContainer.style.background = 'transparent';
         imageContainer.style.boxShadow = 'none';
     } else {
-        // Fallback Icon
-        imageContainer.innerHTML = '<i class="fas fa-hands-asl-interpreting" style="font-size: 4em; color: var(--text-secondary);"></i>';
-        imageContainer.style.background = '#ebf8ff'; // Restore default bg
-        imageContainer.style.boxShadow = '';
+        // Remove the image entirely if there is suppose no image for context questions
+        imageContainer.style.display = 'none';
     }
 
     updateDashboardStats();
@@ -594,6 +732,10 @@ function updateDashboardStats() {
     const heartEl = document.getElementById('main-heart-count');
     const diamondEl = document.getElementById('main-diamond-count');
     const streakEl = document.getElementById('main-streak-count');
+    const levelEl = document.getElementById('user-level-display');
+    const xpFill = document.getElementById('sidebar-xp-fill');
+    const xpText = document.getElementById('sidebar-xp-text');
+
     if (heartEl) {
         let text = gameState.hearts.toString();
         if (gameState.hearts < 5 && gameState.nextHeartIn > 0) {
@@ -607,6 +749,24 @@ function updateDashboardStats() {
     }
     if (diamondEl) diamondEl.innerText = gameState.diamonds;
     if (streakEl) streakEl.innerText = gameState.streak;
+    if (levelEl) levelEl.innerText = `Level ${gameState.level}`;
+
+    // XP Bar Logic (Dynamic Scaling)
+    if (xpFill && xpText) {
+        const L = gameState.level || 1;
+        const currentTotalXp = gameState.xp || 0;
+        
+        // Cumulative XP required for current level L
+        const xpAtLStart = 25 * (L - 1) * (L + 2);
+        // XP required to reach next level L+1 from L
+        const xpForNextGoal = 100 + (L - 1) * 50;
+        
+        const progressInLevel = Math.max(0, currentTotalXp - xpAtLStart);
+        const percentage = Math.min(100, (progressInLevel / xpForNextGoal) * 100);
+        
+        xpFill.style.width = `${percentage}%`;
+        xpText.innerText = `${Math.floor(progressInLevel)} / ${xpForNextGoal} XP to level up`;
+    }
 }
 
 // Audio Output function
@@ -661,8 +821,10 @@ function checkAnswer(btnElement, answerValue) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
+        }).then(res => res.json()).then(data => {
+            updateGameState(data);
+            showQuizFeedback(true, answerValue, currentQ.correct_option);
         });
-        setTimeout(() => nextQuestion(), 1500);
     } else {
         playSound('incorrect');
         btnElement.classList.add('incorrect');
@@ -672,23 +834,8 @@ function checkAnswer(btnElement, answerValue) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: false })
         }).then(res => res.json()).then(data => {
-            gameState.hearts = data.hearts;
-            gameState.nextHeartIn = data.next_heart_in_seconds || 0;
-            // updateQuizUI(); // Don't redraw yet, wait for delay logic
-            document.getElementById('heart-count').innerText = gameState.hearts;
-
-            if (gameState.hearts <= 0) {
-                setTimeout(() => {
-                    if (window.CURRENT_PAGE_TYPE !== 'quiz') {
-                        closeModal('quiz-modal');
-                    }
-                    showGameOver();
-                }, 1500);
-            } else {
-                setTimeout(() => nextQuestion(), 1500);
-                // Move next even on wrong? Or let them retry? 
-                // Generally in Duolingo style you get corrected and move on.
-            }
+            updateGameState(data);
+            showQuizFeedback(false, answerValue, currentQ.correct_option);
         });
     }
 }
@@ -696,42 +843,36 @@ function checkAnswer(btnElement, answerValue) {
 function nextQuestion() {
     gameState.currentQuestionIndex++;
     if (gameState.currentQuestionIndex >= gameState.totalQuestions) {
-        let fullyCompleted = false;
-        if (gameState.currentLessonId) {
-            if (userProgress[gameState.currentLessonId] < 5) {
-                userProgress[gameState.currentLessonId]++;
-                localStorage.setItem('saybim_lesson_progress_' + gameState.username, JSON.stringify(userProgress));
-                if (userProgress[gameState.currentLessonId] === 5) {
-                    fullyCompleted = true;
-                }
-            }
-        }
+        pauseQuizTimer();
+        let fullyCompleted = true; // One completion is now enough for Topic lessons
 
         fetch('/api/lesson/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fully_completed: fullyCompleted })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    gameState.streak = data.user.streak;
-                    gameState.xp = data.user.xp;
-                    gameState.diamonds = data.user.diamonds;
-                    
-                    if (window.CURRENT_PAGE_TYPE === 'quiz') {
-                        showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
-                            window.location.href = '/';
-                        });
-                    } else {
-                        showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success');
-                        updateDashboardStats();
-                        renderLessonCards();
-                        closeModal('quiz-modal');
-                        gameState.currentQuestionIndex = 0;
-                    }
+            body: JSON.stringify({ 
+                fully_completed: fullyCompleted,
+                topic_id: window.CURRENT_TOPIC_ID || 1,
+                lesson_id: window.CURRENT_LESSON_ID || 1
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                // If it's a full user object under 'user' key (like some endpoints return)
+                // or just the user properties directly
+                const userData = data.user || data;
+                updateGameState(userData);
+                
+                if (window.CURRENT_PAGE_TYPE === 'quiz') {
+                    showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
+                        window.location.href = '/';
+                    });
+                } else {
+                    showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success');
+                    renderLessonCards();
+                    closeModal('quiz-modal');
+                    gameState.currentQuestionIndex = 0;
                 }
-            });
+            }
+        });
     } else {
         const allBtns = document.querySelectorAll('.quiz-options .quiz-btn');
         allBtns.forEach(b => b.classList.remove('correct', 'incorrect'));
@@ -740,6 +881,7 @@ function nextQuestion() {
 }
 
 function showGameOver() {
+    pauseQuizTimer();
     const gamemodal = document.getElementById('game-over-modal');
     if (gamemodal.classList.contains('modal-overlay')) {
         gamemodal.classList.add('active');
@@ -757,14 +899,7 @@ function refillHearts() {
         })
         .then(data => {
             if (data.success) {
-                gameState.hearts = data.user.hearts;
-                gameState.diamonds = data.user.diamonds;
-                gameState.nextHeartIn = data.user.next_heart_in_seconds || 0;
-                if (window.CURRENT_PAGE_TYPE !== 'quiz') {
-                    updateDashboardStats();
-                } else {
-                    document.getElementById('heart-count').innerText = gameState.hearts;
-                }
+                updateGameState(data.user);
                 
                 const gameOverModal = document.getElementById('game-over-modal');
                 if(gameOverModal) {
@@ -775,6 +910,8 @@ function refillHearts() {
                 if (gameState.currentQuestionIndex < gameState.totalQuestions) {
                     if (window.CURRENT_PAGE_TYPE !== 'quiz') {
                         document.getElementById('quiz-modal').classList.add('active');
+                    } else if (window.CURRENT_LESSON_ID === 8 && currentRemainingTime > 0) {
+                        startQuizTimer(); // Resume the timer
                     }
                     updateQuizUI();
                 }
@@ -787,6 +924,125 @@ function refillHearts() {
 
 function quitLesson() {
     closeModal('game-over-modal');
+}
+
+function handleSequenceClick(btn, text) {
+    if (btn.classList.contains('selected')) return;
+    
+    gameState.selectedSequence.push(text);
+    btn.classList.add('selected');
+    
+    // Add number badge
+    const badge = document.createElement('div');
+    badge.className = 'sequence-badge';
+    badge.innerText = gameState.selectedSequence.length;
+    btn.appendChild(badge);
+    
+    const currentQ = gameState.questions[gameState.currentQuestionIndex];
+    
+    // Update Confirm Button
+    const confirmBtn = document.getElementById('confirm-sequence-btn');
+    if (confirmBtn) {
+        if (gameState.selectedSequence.length > 0) {
+            confirmBtn.classList.add('active');
+        }
+        if (gameState.selectedSequence.length === currentQ.correct_sequence.length) {
+            confirmBtn.disabled = false;
+        } else {
+            confirmBtn.disabled = true;
+        }
+    }
+}
+
+function resetSequence() {
+    gameState.selectedSequence = [];
+    const btns = document.querySelectorAll('.quiz-options .quiz-btn');
+    btns.forEach(btn => {
+        btn.classList.remove('selected', 'correct', 'incorrect');
+        const badge = btn.querySelector('.sequence-badge');
+        if (badge) badge.remove();
+        btn.disabled = false;
+    });
+}
+
+function checkSequenceAnswer() {
+    const currentQ = gameState.questions[gameState.currentQuestionIndex];
+    const isCorrect = JSON.stringify(gameState.selectedSequence) === JSON.stringify(currentQ.correct_sequence);
+    
+    const allBtns = document.querySelectorAll('.quiz-options .quiz-btn');
+    allBtns.forEach(b => b.disabled = true);
+    
+    const confirmBtn = document.getElementById('confirm-sequence-btn');
+    if (confirmBtn) confirmBtn.disabled = true;
+
+    if (isCorrect) {
+        playSound('correct');
+        const selectedBtns = document.querySelectorAll('.quiz-options .quiz-btn.selected');
+        selectedBtns.forEach(b => b.classList.add('correct'));
+        
+        fetch('/api/quiz/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correct: true })
+        }).then(res => res.json()).then(data => {
+            updateGameState(data);
+            showQuizFeedback(true, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
+        });
+    } else {
+        playSound('incorrect');
+        const selectedBtns = document.querySelectorAll('.quiz-options .quiz-btn.selected');
+        selectedBtns.forEach(b => b.classList.add('incorrect'));
+        
+        fetch('/api/quiz/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correct: false })
+        }).then(res => res.json()).then(data => {
+            updateGameState(data);
+            showQuizFeedback(false, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
+        });
+    }
+}
+
+function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
+    pauseQuizTimer();
+    const overlay = document.getElementById('quiz-feedback-overlay');
+    overlay.className = `feedback-overlay ${isCorrect ? 'correct' : 'incorrect'}`;
+    
+    let html = `
+        <div class="feedback-title">${isCorrect ? '<i class="fas fa-check-circle"></i> Brilliant!' : '<i class="fas fa-times-circle"></i> Not Quite...'}</div>
+        <div class="feedback-details">
+    `;
+    
+    if (!isCorrect) {
+        html += `<div class="feedback-word">You chose: <span>${userAnswer}</span></div>`;
+        html += `<div class="feedback-word">Correct answer: <span>${correctAnswer}</span></div>`;
+    }
+    
+    html += `</div>
+        <button class="feedback-ok-btn" id="feedback-ok-btn">OK</button>
+    `;
+    
+    overlay.innerHTML = html;
+    overlay.style.display = 'flex';
+    
+    document.getElementById('feedback-ok-btn').onclick = () => {
+        overlay.style.display = 'none';
+        
+        if (!isCorrect && gameState.hearts <= 0) {
+            if (window.CURRENT_PAGE_TYPE !== 'quiz') {
+                closeModal('quiz-modal');
+            }
+            showGameOver();
+        } else {
+            nextQuestion();
+            // Only resume timer for Mastery Review lessons
+            if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || 
+                (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+                startQuizTimer();
+            }
+        }
+    };
 }
 
 function toggleHint() {
@@ -814,15 +1070,36 @@ window.onclick = function (event) {
 
 // Settings Logic
 function submitFeedback() {
-    const text = document.getElementById('feedback-text').value;
-    if (text.trim() === '') {
-        showFloatMessage("Please enter some feedback first!");
+    const feedbackText = document.getElementById('feedback-text');
+    const text = feedbackText.value.trim();
+    
+    if (text === '') {
+        showFloatMessage("Please enter some feedback first!", "warning");
         return;
     }
-    showFloatMessage("Thank you for your feedback! We've received it.");
-    document.getElementById('feedback-text').value = '';
-    closeModal('feedback-modal');
-    document.getElementById('feedback-modal').style.display = 'none';
+    
+    showFloatMessage("Sending feedback...", "info");
+    
+    fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showFloatMessage("Thank you for your feedback! Sent to developer telegram bot.");
+            feedbackText.value = '';
+            closeModal('feedback-modal');
+            document.getElementById('feedback-modal').style.display = 'none';
+        } else {
+            showFloatMessage(data.message || "Failed to send feedback.", "danger");
+        }
+    })
+    .catch(err => {
+        console.error("Feedback error:", err);
+        showFloatMessage("Error connecting to feedback server.", "danger");
+    });
 }
 
 function openFeedbackModal() {
@@ -954,9 +1231,9 @@ function onResults(results) {
     // 3. Predict if we have 30 frames
     const modal = document.getElementById('camera-modal');
     const isModalActive = modal && modal.classList.contains('active');
-    const isPracticePage = window.CURRENT_PAGE_TYPE === 'practice' && practiceSession.active;
+    const isPracticePage = window.CURRENT_PAGE_TYPE === 'practice';
 
-    if (sequence.length === 30 && model && (isModalActive || isPracticePage)) {
+    if (sequence.length === 30 && model && (isModalActive || isPracticePage) && !gameState.detectionPaused) {
         predictGesture();
     }
 }
@@ -1019,13 +1296,10 @@ async function predictGesture() {
             `;
         }
 
-        // Check against target (Only if practice is active)
-        if (practiceSession.active) {
-            const currentTarget = practiceSession.items[practiceSession.currentIndex];
-            if (predictedAction === currentTarget && confidence > 0.7) {
-                sequence = [];
-                handleCorrectAnswer(predictedAction);
-            }
+        // Check if anything was detected (Requirement of specific alphabet removed)
+        if (!gameState.detectionPaused && confidence > 0.7) {
+            sequence = [];
+            handleCorrectAnswer(predictedAction);
         }
 
     } catch (err) {
@@ -1036,18 +1310,32 @@ async function predictGesture() {
 }
 
 function handleCorrectAnswer(action) {
-    playSound('correct');
-    showFloatMessage(`Correct! That is ${action}.`);
+    if (gameState.detectionPaused) return; // Prevent double trigger
+    gameState.detectionPaused = true;
+    
+    // Stop Camera immediately for Alphabets Practice (as per user request: "camera off after complete 1 gesture")
+    if (window.CURRENT_PAGE_TYPE === 'practice') {
+        if (camera) {
+            camera.stop();
+            const videoElement = document.getElementById('webcam');
+            if (videoElement) videoElement.style.opacity = '0.3';
+            
+            // Hide camera active indicator
+            const indicator = document.getElementById('camera-active-status');
+            if (indicator) indicator.style.display = 'none';
+        }
+    }
 
+    playSound('correct');
+    showFloatMessage(`Correct! That is ${action}. +10 XP`);
+    
     // Notify Backend
     fetch('/api/practice/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: action })
     }).then(res => res.json()).then(data => {
-        gameState.diamonds = data.user.diamonds; // Update diamonds from backend response
-        gameState.xp = data.user.xp;
-        updateDashboardStats();
+        updateGameState(data.user || data);
     });
 
     practiceSession.currentIndex++;
@@ -1122,6 +1410,10 @@ async function openCameraModal(customText) {
     if (window.CURRENT_PAGE_TYPE === 'practice') {
         const cameraContainer = document.getElementById('practice-camera-container');
         if (cameraContainer) cameraContainer.style.display = 'block';
+        
+        // Show camera active indicator
+        const indicator = document.getElementById('camera-active-status');
+        if (indicator) indicator.style.display = 'flex';
     }
 
     if (customText) {
@@ -1185,4 +1477,63 @@ function verifyGesture() {
     if (practiceSession.active) {
         console.log("Manual verification clicked... relying on auto-prediction for now.");
     }
+}
+
+// --- Timer Functions ---
+
+function startQuizTimer() {
+    if (quizTimerInterval) clearInterval(quizTimerInterval);
+    const container = document.getElementById('quiz-timer-container');
+    if (container) container.style.display = 'flex';
+    
+    quizTimerInterval = setInterval(() => {
+        if (currentRemainingTime <= 0) {
+            pauseQuizTimer();
+            showTimeUp();
+            return;
+        }
+        currentRemainingTime--;
+        
+        let m = Math.floor(currentRemainingTime / 60);
+        let s = currentRemainingTime % 60;
+        const display = document.getElementById('quiz-timer-display');
+        if (display) display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function pauseQuizTimer() {
+    if (quizTimerInterval) {
+        clearInterval(quizTimerInterval);
+        quizTimerInterval = null;
+    }
+}
+
+function showTimeUp() {
+    const modal = document.getElementById('time-up-modal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+}
+
+function buyTime() {
+    fetch('/api/user/buy_time', { method: 'POST' })
+        .then(res => {
+            if (res.ok) return res.json();
+            throw new Error("Not enough diamonds");
+        })
+        .then(data => {
+            if (data.success) {
+                gameState.diamonds = data.user.diamonds;
+                const modal = document.getElementById('time-up-modal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    modal.style.display = 'none';
+                }
+                
+                currentRemainingTime += 30;
+                startQuizTimer();
+            }
+        })
+        .catch(err => showFloatMessage(err.message, 'danger'));
 }

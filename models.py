@@ -20,6 +20,7 @@ class User(db.Model):
     last_streak_date = db.Column(db.Date, nullable=True)
     weekly_xp = db.Column(db.Integer, default=0)
     last_weekly_reset = db.Column(db.DateTime, nullable=True)
+    topic_progress = db.Column(db.String(500), default='{}')
 
     def update_streak(self):
         today = date.today()
@@ -76,6 +77,7 @@ class User(db.Model):
             'hearts': self.hearts,
             'diamonds': self.diamonds,
             'streak': self.streak,
+            'topic_progress': self.topic_progress,
             'next_heart_in_seconds': next_heart_in_seconds
         }
 

@@ -3,3 +3,4 @@ flask-sqlalchemy
 flask-cors
 sqlalchemy
 firebase-admin
+python-dotenv

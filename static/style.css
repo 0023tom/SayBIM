@@ -362,6 +362,21 @@ body {
     margin-top: 30px;
 }
 
+.sidebar-xp-bar {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.sidebar-xp-fill {
+    height: 100%;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(118, 75, 162, 0.3);
+}
+
 .quiz-options button:last-child:nth-child(odd) {
     grid-column: span 2;
 }
@@ -397,6 +412,184 @@ body {
     border-color: #FC8181;
     color: #742A2A;
     box-shadow: 0 4px 12px rgba(252, 129, 129, 0.3);
+}
+
+.quiz-btn.selected {
+    border-color: var(--accent-blue);
+    background: #f0f7ff;
+    position: relative;
+    transform: scale(0.98);
+}
+
+.sequence-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--accent-blue);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    box-shadow: 0 4px 8px rgba(99, 179, 237, 0.4);
+    z-index: 5;
+    animation: badgePop 0.3s cubic_bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+.clear-sequence-btn {
+    grid-column: span 2;
+    background: white;
+    border: 2px dashed #e2e8f0;
+    color: var(--text-secondary);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.clear-sequence-btn:hover {
+    background: #fff5f5;
+    border-color: #feb2b2;
+    color: #e53e3e;
+}
+
+/* Sequencing Confirmation Button */
+.confirm-sequence-btn {
+    grid-column: span 2;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: none; /* Shown via JS */
+}
+
+.confirm-sequence-btn.active {
+    display: block;
+    animation: slideUp 0.4s forwards;
+}
+
+.confirm-sequence-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px -5px rgba(102, 126, 234, 0.5);
+}
+
+.confirm-sequence-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Feedback Overlay */
+.feedback-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 40px;
+    box-shadow: 0 -15px 50px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 8px solid;
+    animation: feedbackSlideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes feedbackSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.feedback-overlay.correct {
+    border-color: var(--accent-green);
+    background-color: #f0fff4;
+}
+
+.feedback-overlay.incorrect {
+    border-color: var(--accent-red);
+    background-color: #fff5f5;
+}
+
+.feedback-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.feedback-overlay.correct .feedback-title { color: #2f855a; }
+.feedback-overlay.incorrect .feedback-title { color: #c53030; }
+
+.feedback-details {
+    margin-bottom: 30px;
+    text-align: center;
+    width: 100%;
+}
+
+.feedback-word {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.feedback-word span {
+    font-weight: 800;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+}
+
+.feedback-ok-btn {
+    width: 100%;
+    max-width: 400px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s;
+}
+
+.feedback-overlay.correct .feedback-ok-btn {
+    background-color: var(--accent-green);
+}
+
+.feedback-overlay.incorrect .feedback-ok-btn {
+    background-color: var(--accent-red);
+}
+
+.feedback-ok-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Practice Grid */
@@ -928,4 +1121,32 @@ input:checked + .premium-slider {
 
 input:checked + .premium-slider:before {
     transform: translateX(28px);
+}
+
+/* Practice Choice Cards */
+.practice-category-card {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.practice-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Maintenance Notice */
+#maintenance-overlay {
+    backdrop-filter: blur(4px);
+    border-radius: var(--radius-lg);
+}
+
+/* Selected Button State */
+.quiz-btn.selected {
+    background: var(--accent-blue) !important;
+    color: white !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 15px rgba(66, 153, 225, 0.4);
+}
+
+/* Base modal transition for camera */
+#practice-camera-container video {
+    transition: opacity 0.5s ease;
 }

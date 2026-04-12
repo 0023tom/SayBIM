@@ -4,7 +4,12 @@ from flask_cors import CORS
 import os
 import random
 from datetime import datetime, timedelta
+import json
 from werkzeug.utils import secure_filename
+import requests
+from dotenv import load_dotenv
+
+load_dotenv() # Load from .env file
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = 'super-secret-key-for-saybim' # In production, use a secure random key
 CORS(app)
@@ -29,8 +34,26 @@ from firebase_config import db_firestore
 USE_FIREBASE = db_firestore is not None
 
 from data_manager import DataManager, UserWrapper, USE_FIREBASE
+from quiz_data import generate_topic_quiz
 
 # Helper to get or create default user
+import math
+
+def calculate_level(xp):
+    if xp < 100: return 1
+    # Solves 25(L-1)(L+2) <= xp
+    # L = (-1 + sqrt(9 + 0.16 * xp)) / 2
+    level = math.floor((-1 + math.sqrt(9 + 0.16 * xp)) / 2)
+    return max(1, level)
+
+def get_xp_for_level(level):
+    if level <= 1: return 0
+    return 25 * (level - 1) * (level + 2)
+
+@app.context_processor
+def utility_processor():
+    return dict(calculate_level=calculate_level, get_xp_for_level=get_xp_for_level)
+
 def get_current_user():
     if 'user_id' in session:
         return DataManager.get_user_by_id(session['user_id'])
@@ -65,15 +88,31 @@ def home():
     db.session.commit()
     return render_template('index.html', user=user)
 
-@app.route('/quiz/<int:lesson_id>')
-def quiz_page(lesson_id):
+@app.route('/topic/<int:topic_id>')
+def topic_page(topic_id):
+    user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+        
+    try:
+        progress_dict = json.loads(user.topic_progress or '{}')
+    except:
+        progress_dict = {}
+        
+    # Get highest unlocked lesson for this topic (defaults to 1)
+    highest_unlocked = progress_dict.get(str(topic_id), 1)
+    
+    return render_template('topic_lessons.html', user=user, topic_id=topic_id, highest_unlocked=highest_unlocked)
+
+@app.route('/quiz/<int:topic_id>/<int:lesson_id>')
+def quiz_page(topic_id, lesson_id):
     user = get_current_user()
     if not user:
         return redirect(url_for('login'))
     if user.hearts <= 0:
         flash("You are out of hearts. Wait for a refill or buy more to play!", "danger")
-        return redirect(url_for('home'))
-    return render_template('quiz_page.html', user=user, lesson_id=lesson_id)
+        return redirect(url_for('topic_page', topic_id=topic_id))
+    return render_template('quiz_page.html', user=user, topic_id=topic_id, lesson_id=lesson_id)
 
 @app.route('/practice')
 def practice_page():
@@ -206,124 +245,9 @@ def get_leaderboard():
         
     return jsonify(result)
 
-@app.route('/api/quiz/<int:lesson_id>', methods=['GET'])
-def get_quiz(lesson_id):
-    if lesson_id == 2:
-        POOL = [
-            "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-            "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
-            "eighteen", "nineteen", "twenty", "twenty_one", "twenty_two", "twenty_three",
-            "thirty", "fourty", "hundred", "thousand", "million"
-        ]
-        HINTS = {
-            "one": "Hold up your index finger.",
-            "two": "Hold up your index and middle fingers.",
-            "three": "Hold up your thumb, index, and middle fingers.",
-            "four": "Hold up four fingers, excluding your thumb.",
-            "five": "Hold up all five fingers with your hand open.",
-            "six": "Touch your thumb to your pinky finger.",
-            "seven": "Touch your thumb to your ring finger.",
-            "eight": "Touch your thumb to your middle finger.",
-            "nine": "Touch your thumb to your index finger.",
-            "ten": "Give a thumbs up and shake it side to side.",
-            "eleven": "Flick your index finger up twice.",
-            "twelve": "Flick your index and middle fingers up twice.",
-            "thirteen": "Wiggle your thumb, index, and middle fingers together.",
-            "fourteen": "Tuck your thumb and fold your four fingers inward twice.",
-            "fifteen": "Wave your open hand back twice.",
-            "sixteen": "Twist your hand twice while signing six.",
-            "seventeen": "Twist your hand twice while signing seven.",
-            "eighteen": "Twist your hand twice while signing eight.",
-            "nineteen": "Twist your hand twice while signing nine.",
-            "twenty": "Tap your index finger and thumb together.",
-            "twenty_one": "Point your finger like a gun and wiggle the thumb.",
-            "twenty_two": "Sign two, then bounce your hand and sign two again.",
-            "twenty_three": "Sign three, then wiggle your middle finger.",
-            "thirty": "Sign three, then sign zero.",
-            "fourty": "Sign four, then sign zero.",
-            "hundred": "Sign the number, then pull your hand back into a 'C' shape.",
-            "thousand": "Tap your fingertips against the flat palm of your other hand.",
-            "million": "Tap your fingertips against your palm, then move slightly up and tap again."
-        }
-    else:
-        POOL = [
-            "How are you", "Peace be Upon You", "Hi, Hello", "Fine", "Excuse",
-            "Sorry", "Salam", "Regards", "You Are Welcome", "Well",
-            "Welcome", "Happy Birthday", "Good Bye", "Good Night", "Good Morning",
-            "Good Afternoon", "Happy Anniversary", "Please (Welcome)", "Congratulations",
-            "Thank You", "Please", "And unto you peace"
-        ]
-        
-        HINTS = {
-            "How are you": "Use both hands pointing forward, or sign 'How' and 'You'.",
-            "Peace be Upon You": "Touch your chest and move hands outward, symbolizing offering peace.",
-            "Hi, Hello": "A simple wave or salute gesture.",
-            "Fine": "Tap your thumb on your chest with fingers spread.",
-            "Excuse": "Wipe one hand over the other in a forward motion.",
-            "Sorry": "Rub a fist in a circular motion over your chest.",
-            "Salam": "A traditional gesture of greeting and respect.",
-            "Regards": "Move your hands forward from your chest.",
-            "You Are Welcome": "A sweeping motion with one hand, or simply the sign for 'welcome'.",
-            "Well": "Sign 'Good' by moving your hand from chin to the other hand.",
-            "Welcome": "Move your hand toward your body in a welcoming gesture.",
-            "Happy Birthday": "Sign 'Happy' (brushing chest upwards) and 'Birthday' (middle finger from chin to chest).",
-            "Good Bye": "A simple wave, opening and closing the hand.",
-            "Good Night": "Sign 'Good' and then 'Night' by crossing hands downward.",
-            "Good Morning": "Sign 'Good' and then bring one hand up like the sun rising.",
-            "Good Afternoon": "Sign 'Good' and then bounce one hand down halfway.",
-            "Happy Anniversary": "Sign 'Happy' and outline a circle for anniversary year.",
-            "Please (Welcome)": "Rub your chest in a circular motion with an open hand.",
-            "Congratulations": "Clasp your hands together and shake them slightly.",
-            "Thank You": "Touch the fingers of one hand to your chin, then move the hand away from your body.",
-            "Please": "Rub your palm in a circle on your chest.",
-            "And unto you peace": "Return the gesture of peace pointing towards the person."
-        }
-    
-    # Select 10 random questions (or fewer if pool is small)
-    selected_items = random.sample(POOL, min(10, len(POOL)))
-    questions = []
-    
-    for idx, correct_answer in enumerate(selected_items):
-        # Create distractors
-        distractors = random.sample([item for item in POOL if item != correct_answer], min(3, len(POOL)-1))
-        options = distractors + [correct_answer]
-        random.shuffle(options)
-        
-        media_url = None
-        media_type = None
-        
-        # Search for any file in the specific lesson folder
-        base_path = os.path.join(app.static_folder, 'quiz_media', f'lesson{lesson_id}')
-        
-        # Ensure filename is safe and has no spaces/special chars
-        safe_name = correct_answer.replace(',', '').replace('(', '').replace(')', '')
-        safe_name = safe_name.replace(' ', '_').replace('__', '_').strip('_')
-
-        for ext in ['.mp4', '.jpg', '.jpeg', '.png']:
-            filename = f"{safe_name}{ext}"
-            if os.path.exists(os.path.join(base_path, filename)):
-                media_url = f"/static/quiz_media/lesson{lesson_id}/{filename}"
-                media_type = 'video' if ext == '.mp4' else 'image'
-                break
-        
-        # Fallback for serverless environments (like Vercel) where os.path.exists 
-        # might fail if static files are not explicitly bundled in the lambda.
-        if not media_url:
-            media_url = f"/static/quiz_media/lesson{lesson_id}/{safe_name}.jpg"
-            media_type = 'image'
-        
-        questions.append({
-            'id': idx + 1,
-            'text': f'What is the sign for "{correct_answer}"?' if not media_url else "What does this sign mean?", 
-            'target_sign': correct_answer, 
-            'question_text': "What does this sign mean?",
-            'options': options,
-            'correct_option': correct_answer,
-            'media_url': media_url,
-            'media_type': media_type,
-            'hint': HINTS.get(correct_answer, "Take your time and guess.")
-        })
-        
+@app.route('/api/quiz/<int:topic_id>/<int:lesson_id>', methods=['GET'])
+def get_quiz(topic_id, lesson_id):
+    questions = generate_topic_quiz(topic_id, lesson_id)
     return jsonify(questions)
 
 @app.route('/api/quiz/submit', methods=['POST'])
@@ -344,11 +268,11 @@ def submit_quiz_result():
             user.last_heart_update = datetime.utcnow()
         user.hearts = max(0, (user.hearts or 0) - 1)
     
-    # Check level up (every 100 XP)
-    new_level = 1 + ((user.xp or 0) // 100)
+    # Check level up (Scaling: +50 per level)
+    new_level = calculate_level(user.xp or 0)
     if new_level > (user.level or 1):
         user.level = new_level
-        user.diamonds = (user.diamonds or 0) + 50 # Level up bonus
+        user.diamonds = (user.diamonds or 0) + 100 # Increased bonus for harder levels
     
     user.commit()
     new_badges = check_badges(user)
@@ -370,6 +294,16 @@ def refill_hearts():
         return jsonify({'success': True, 'user': user.to_dict()})
     return jsonify({'success': False, 'message': 'Not enough diamonds'}), 400
 
+@app.route('/api/user/buy_time', methods=['POST'])
+def buy_time():
+    user = get_current_user()
+    if not user: return jsonify({'error': 'Unauthorized'}), 401
+    if (user.diamonds or 0) >= 100:
+        user.diamonds = (user.diamonds or 0) - 100
+        user.commit()
+        return jsonify({'success': True, 'user': user.to_dict()})
+    return jsonify({'success': False, 'message': 'Not enough diamonds'}), 400
+
 @app.route('/api/practice/complete', methods=['POST'])
 def complete_practice():
     data = request.json
@@ -378,12 +312,11 @@ def complete_practice():
     
     # Award for practice
     check_and_reset_weekly_xp(user)
-    user.xp = (user.xp or 0) + 20
-    user.weekly_xp = (user.weekly_xp or 0) + 20
-    user.diamonds = (user.diamonds or 0) + 10
+    user.xp = (user.xp or 0) + 10
+    user.weekly_xp = (user.weekly_xp or 0) + 10
     
     user.commit()
-    return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}!'})
+    return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}! +10 XP'})
 
 @app.route('/api/lesson/complete', methods=['POST'])
 def complete_lesson():
@@ -392,14 +325,38 @@ def complete_lesson():
     
     data = request.get_json(silent=True) or {}
     fully_completed = data.get('fully_completed', False)
+    topic_id = str(data.get('topic_id', '1'))
+    lesson_id = int(data.get('lesson_id', 0))
 
     check_and_reset_weekly_xp(user)
 
     if fully_completed:
-        user.xp = (user.xp or 0) + 200 # More XP
-        user.weekly_xp = (user.weekly_xp or 0) + 200
-        user.diamonds = (user.diamonds or 0) + 100 # More Diamonds
-        message = "Lesson Fully Completed! +200 XP, +100 Diamonds"
+        is_mastery = (topic_id == '1' and lesson_id == 8) or (topic_id == '2' and lesson_id == 9)
+        
+        if is_mastery:
+            xp_reward = 200
+            diamond_reward = 100
+            message = f"Topic {topic_id} Complete! +200 XP, +100 Diamonds"
+        else:
+            xp_reward = 50
+            diamond_reward = 25
+            message = "Lesson Completed! +50 XP, +25 Diamonds"
+
+        user.xp = (user.xp or 0) + xp_reward
+        user.weekly_xp = (user.weekly_xp or 0) + xp_reward
+        user.diamonds = (user.diamonds or 0) + diamond_reward
+        
+        # Update topic progress
+        try:
+            progress_dict = json.loads(user.topic_progress or '{}')
+        except:
+            progress_dict = {}
+        
+        current_highest = progress_dict.get(topic_id, 1)
+        if lesson_id >= current_highest:
+            progress_dict[topic_id] = lesson_id + 1
+            user.topic_progress = json.dumps(progress_dict)
+            
     else:
         user.xp = (user.xp or 0) + 50
         user.weekly_xp = (user.weekly_xp or 0) + 50
@@ -477,6 +434,50 @@ def delete_account():
     session.pop('user_id', None)
     
     return jsonify({'success': True, 'message': 'Account deleted successfully'})
+
+# --- Telegram Feedback Profile ---
+# Pulled from .env file
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+
+@app.route('/api/feedback', methods=['POST'])
+def handle_feedback():
+    user = get_current_user()
+    data = request.json
+    text = data.get('feedback', '')
+    
+    if not text:
+        return jsonify({'success': False, 'message': 'No feedback provided'}), 400
+        
+    username = user.username if user else "Guest"
+    email = user.email if user else "N/A"
+    
+    # Format message for Telegram
+    message = f"🆕 *New Feedback from SayBIM*\n\n"
+    message += f"👤 *User:* {username}\n"
+    message += f"📧 *Email:* {email}\n"
+    message += f"💬 *Message:* {text}\n"
+    message += f"⏰ *Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    # Send to Telegram
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        res = requests.post(url, json=payload, timeout=10)
+        
+        if res.status_code == 200:
+            return jsonify({'success': True, 'message': 'Feedback sent to Telegram!'})
+        else:
+            print(f"Telegram API Error: {res.text}")
+            return jsonify({'success': False, 'message': 'Could not reach Telegram API'}), 500
+            
+    except Exception as e:
+        print(f"Feedback error: {e}")
+        return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
 # Initialize DB
 with app.app_context():
