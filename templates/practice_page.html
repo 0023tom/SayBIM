@@ -81,7 +81,7 @@
         
         <!-- Navbar / Header Area -->
         <div style="background: white; padding: 15px 40px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; z-index: 10;">
-            <button onclick="window.location.href='/'" style="background: var(--bg-light); color: var(--text-primary); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; border: 1px solid #e2e8f0; cursor: pointer; margin-right: 20px;" onmouseover="this.style.background='#edf2f7'" onmouseout="this.style.background='var(--bg-light)'">
+            <button onclick="confirmExit(() => window.location.href='/')" style="background: var(--bg-light); color: var(--text-primary); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; border: 1px solid #e2e8f0; cursor: pointer; margin-right: 20px;" onmouseover="this.style.background='#edf2f7'" onmouseout="this.style.background='var(--bg-light)'">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <h2 id="practice-main-title" style="margin: 0; color: var(--text-primary); font-size: 1.2em; font-weight: 800;">What would you like to <span style="color: var(--accent-blue);">practice</span> today?</h2>
@@ -96,6 +96,14 @@
                 <div id="practice-categories">
                     <div id="practice-target-btns" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px;">
                         <!-- Buttons A-L or 1-10 will be rendered here by JS -->
+                    </div>
+                </div>
+
+                <!-- Reference Sign Image -->
+                <div id="reference-sign-container" style="margin-top: 40px; display: none; text-align: center; background: white; padding: 25px; border-radius: var(--radius-md); border: 1px solid #f1f5f9; box-shadow: var(--shadow-soft);">
+                    <h4 style="margin: 0 0 15px 0; color: var(--text-secondary); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Reference Sign</h4>
+                    <div style="width: 100%; max-width: 300px; aspect-ratio: 1; margin: 0 auto; border-radius: var(--radius-sm); overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0;">
+                        <img id="reference-sign-img" src="" alt="Reference Sign" style="width: 100%; height: 100%; object-fit: contain;">
                     </div>
                 </div>
 

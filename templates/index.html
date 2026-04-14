@@ -9,11 +9,7 @@
     <!-- Font Awesome for Icons (Placeholder CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- TensorFlow.js and MediaPipe -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <!-- MediaPipe - Only needed scripts for standard UI if any (currently none) -->
 </head>
 
 <body>
@@ -84,7 +80,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--accent-red);">
+                <a href="javascript:void(0)" onclick="confirmExit(() => window.location.href='/logout')" class="nav-link" style="color: var(--accent-red);">
                     <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
                     Logout
                 </a>
@@ -174,7 +170,7 @@
                             <span style="font-size: 0.8em; color: #FF6B6B; font-weight: bold;">Step 1</span>
                             <i class="fas fa-font" style="color: #FF6B6B;"></i>
                         </div>
-                        <div class="lesson-title">ASL Alphabets</div>
+                        <div class="lesson-title">BIM Alphabets</div>
                         <div class="lesson-desc">Practice signs from A to L with real-time AI recognition.</div>
                         <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; color: #FF6B6B; font-weight: 800; font-size: 0.9em;">
                             Master A to L <i class="fas fa-arrow-right"></i>
@@ -408,7 +404,7 @@
     <!-- Camera Modal -->
     <div id="camera-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
-            <button class="modal-close" onclick="closeModal('camera-modal')">
+            <button class="modal-close" onclick="confirmExit(() => closeModal('camera-modal'))">
                 <i class="fas fa-times"></i>
             </button>
             <h3 style="margin-bottom: 20px;">Gesture Verification</h3>
@@ -461,7 +457,7 @@
     <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <button class="modal-close" onclick="closeModal('feedback-modal')">
+            <button class="modal-close" onclick="confirmExit(() => closeModal('feedback-modal'))">
                 <i class="fas fa-times"></i>
             </button>
             <h3 style="margin-bottom: 20px;">We Value Your Feedback</h3>

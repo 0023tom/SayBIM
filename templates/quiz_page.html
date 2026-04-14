@@ -7,11 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- TensorFlow.js and MediaPipe -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <!-- MediaPipe - Only needed scripts for standard UI if any (currently none) -->
     
     <script>
         window.CURRENT_TOPIC_ID = parseInt("{{ topic_id }}", 10);
@@ -57,7 +53,7 @@
                     </div>
                     
                     <!-- Inline Close Button -->
-                    <button onclick="window.location.href='/'" style="background: #fee2e2; color: #ef4444; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.1); border: none; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <button onclick="confirmExit(() => window.location.href='/')" style="background: #fee2e2; color: #ef4444; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.1); border: none; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -88,7 +84,7 @@
             <button class="quiz-btn" onclick="refillHearts()" style="width: 100%; background: var(--accent-blue); color: white; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <i class="fas fa-gem"></i> Pay 100 Gems
             </button>
-            <button class="quiz-btn" onclick="window.location.href='/'" style="width: 100%; border: 2px solid #eee; color: var(--text-secondary); background: transparent;">
+            <button class="quiz-btn" onclick="confirmExit(() => window.location.href='/')" style="width: 100%; border: 2px solid #eee; color: var(--text-secondary); background: transparent;">
                 Quit Lesson
             </button>
         </div>
@@ -106,7 +102,7 @@
             <button class="quiz-btn" onclick="buyTime()" style="width: 100%; background: var(--accent-blue); color: white; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <i class="fas fa-gem"></i> Pay 100 Gems for +30s
             </button>
-            <button class="quiz-btn" onclick="window.location.href='/'" style="width: 100%; border: 2px solid #eee; color: var(--text-secondary); background: transparent;">
+            <button class="quiz-btn" onclick="confirmExit(() => window.location.href='/')" style="width: 100%; border: 2px solid #eee; color: var(--text-secondary); background: transparent;">
                 Quit Lesson
             </button>
         </div>
@@ -122,7 +118,7 @@
     <!-- Camera Modal (for practice lessons) -->
     <div id="camera-modal" class="modal-overlay" style="display:none;">
         <div class="modal-content" style="max-width: 700px; text-align: center;">
-            <button class="modal-close" onclick="window.location.href='/'">
+            <button class="modal-close" onclick="confirmExit(() => window.location.href='/')">
                 <i class="fas fa-times"></i>
             </button>
             <h3 style="margin-bottom: 20px;">Gesture Verification</h3>

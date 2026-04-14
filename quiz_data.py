@@ -64,14 +64,14 @@ SIGN_TO_MEDIA = {
     "8": get_media_url("8.jpg", "lesson2"),
     "9": get_media_url("9.jpg", "lesson2"),
     "10": get_media_url("10.jpg", "lesson2"),
-    "Saya": get_media_url("I_Me.jpg", "lesson2"),
-    "Anda / Kamu": get_media_url("You.jpg", "lesson2"),
-    "Dia": get_media_url("He_She.jpg", "lesson2"),
-    "Nama": get_media_url("Name.jpg", "lesson2"),
-    "Tinggal": get_media_url("Stay.jpg", "lesson2"),
-    "Apa": get_media_url("What.jpg", "lesson2"),
-    "Siapa": get_media_url("Who.jpg", "lesson2"),
-    "Mana": get_media_url("Where.jpg", "lesson2"),
+    "Saya": get_media_url("i_me.jpg", "lesson2"),
+    "Anda / Kamu": get_media_url("you.jpg", "lesson2"),
+    "Dia": get_media_url("he_she.jpg", "lesson2"),
+    "Nama": get_media_url("name.jpg", "lesson2"),
+    "Tinggal": get_media_url("stay.jpg", "lesson2"),
+    "Apa": get_media_url("what.jpg", "lesson2"),
+    "Siapa": get_media_url("who.jpg", "lesson2"),
+    "Mana": get_media_url("where.jpg", "lesson2"),
     "Kawan": get_media_url("friend.jpg", "lesson2")
 }
 
@@ -594,11 +594,11 @@ TOPIC_2_DATA = {
         {"type": "Visual", "text": "Identify this number:", "target": "1", "media_url": SIGN_TO_MEDIA["1"]},
         {"type": "Visual", "text": "Identify this number:", "target": "2", "media_url": SIGN_TO_MEDIA["2"]},
         {"type": "Visual", "text": "Identify this number:", "target": "3", "media_url": SIGN_TO_MEDIA["3"]},
-        {"type": "Identification", "text": "Which sign represents 7?", "target": "7", "media_url": None},
+        {"type": "Identification", "text": "Which sign represents 8?", "target": "8", "media_url": None},
         {"type": "Visual", "text": "Identify this number:", "target": "5", "media_url": SIGN_TO_MEDIA["5"]},
         {"type": "Identification", "text": "Which sign represents 9?", "target": "9", "media_url": None},
         {"type": "Visual", "text": "Identify this number:", "target": "10", "media_url": SIGN_TO_MEDIA["10"]},
-        {"type": "Logic", "text": "What number comes after 4?", "target": "5", "media_url": None}
+        {"type": "Logic", "text": "What number comes after 6?", "target": "7", "media_url": None}
     ],
     7: [ # Questions
         {"type": "Visual", "text": "What does this question word mean?", "target": "Apa", "media_url": SIGN_TO_MEDIA["Apa"]},

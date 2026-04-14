@@ -45,40 +45,40 @@ function processToastQueue() {
 
     const msg = document.createElement('div');
     msg.className = `alert alert-${type} float-msg`;
-    
+
     // Auto-detect warning/success levels from content if needed
     if (message.toLowerCase().includes('error') || message.toLowerCase().includes('failed') || message.toLowerCase().includes('incorrect')) {
         msg.className = `alert alert-danger float-msg`;
     } else if (message.toLowerCase().includes('success') || message.toLowerCase().includes('correct') || message.toLowerCase().includes('+')) {
         msg.className = `alert alert-success float-msg`;
     }
-    
+
     // Apply blur for a premium experience
     container.classList.add('blur-active');
     msg.dataset.blur = "true";
 
     msg.innerHTML = `<div style="margin-bottom: 20px;">${message}</div><button class="toast-ok-btn" style="padding: 10px 30px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: white; color: var(--text-primary); box-shadow: var(--shadow-soft); transition: all 0.2s;">OK</button>`;
-    
+
     const okBtn = msg.querySelector('.toast-ok-btn');
     if (okBtn) {
         okBtn.addEventListener('click', () => {
             msg.style.animation = 'fadeOutToast 0.4s forwards';
             setTimeout(() => {
                 if (msg.parentElement) msg.remove();
-                
+
                 // Cleanup blur if no more messages
                 if (!container.querySelector('.float-msg')) {
                     container.classList.remove('blur-active');
                 }
 
                 if (callback) callback();
-                
+
                 // Process next in queue
                 isToastShowing = false;
                 processToastQueue();
             }, 400);
         });
-        
+
         // Hover effect for button
         okBtn.onmouseover = () => okBtn.style.transform = 'scale(1.05)';
         okBtn.onmouseout = () => okBtn.style.transform = 'scale(1)';
@@ -96,7 +96,7 @@ function showFloatConfirm(message, onConfirm) {
     }
     const msg = document.createElement('div');
     msg.className = `alert alert-danger float-msg`;
-    
+
     msg.innerHTML = `
         <div style="margin-bottom: 10px;">${message}</div>
         <div style="display: flex; gap: 10px;">
@@ -104,13 +104,13 @@ function showFloatConfirm(message, onConfirm) {
             <button class="toast-confirm-btn" style="padding: 8px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: var(--accent-red); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">Delete</button>
         </div>
     `;
-    
+
     container.classList.add('blur-active');
     msg.dataset.blur = "true";
 
     const cancelBtn = msg.querySelector('.toast-cancel-btn');
     const confirmBtn = msg.querySelector('.toast-confirm-btn');
-    
+
     cancelBtn.addEventListener('click', () => {
         msg.style.animation = 'fadeOutToast 0.4s forwards';
         setTimeout(() => {
@@ -135,13 +135,77 @@ function showFloatConfirm(message, onConfirm) {
     container.appendChild(msg);
 }
 
+function showQuitConfirmation(message, onConfirm, onCancel) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const msg = document.createElement('div');
+    msg.className = `alert alert-warning float-msg`;
+
+    msg.innerHTML = `
+        <div style="margin-bottom: 20px; font-weight: bold; font-size: 1.1em;">${message}</div>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button class="toast-cancel-btn" style="padding: 10px 25px; border: 1px solid #ccc; border-radius: 12px; font-weight: bold; cursor: pointer; background: white; color: #333; transition: all 0.2s;">No</button>
+            <button class="toast-confirm-btn" style="padding: 10px 25px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: var(--accent-red); color: white; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); transition: all 0.2s;">Yes</button>
+        </div>
+    `;
+
+    container.classList.add('blur-active');
+    msg.dataset.blur = "true";
+
+    const cancelBtn = msg.querySelector('.toast-cancel-btn');
+    const confirmBtn = msg.querySelector('.toast-confirm-btn');
+
+    const closeToast = () => {
+        msg.style.animation = 'fadeOutToast 0.4s forwards';
+        setTimeout(() => {
+            if (msg.parentElement) msg.remove();
+            if (!container.querySelector('[data-blur="true"]')) {
+                container.classList.remove('blur-active');
+            }
+        }, 400);
+    };
+
+    cancelBtn.onclick = () => {
+        closeToast();
+        if (onCancel) onCancel();
+    };
+
+    confirmBtn.onclick = () => {
+        closeToast();
+        if (onConfirm) onConfirm();
+    };
+
+    container.appendChild(msg);
+}
+
+function confirmExit(onConfirm) {
+    const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
+                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9);
+    
+    if (isMastery) {
+        pauseQuizTimer();
+    }
+
+    showQuitConfirmation("Are you sure you want to quit?", () => {
+        if (onConfirm) onConfirm();
+    }, () => {
+        if (isMastery) {
+            startQuizTimer();
+        }
+    });
+}
+
 function startHeartTimer() {
     if (heartTimer) clearInterval(heartTimer);
     heartTimer = setInterval(() => {
         if (gameState.hearts < 5 && gameState.nextHeartIn > 0) {
             gameState.nextHeartIn--;
             updateDashboardStats();
-            
+
             if (gameState.nextHeartIn <= 0) {
                 fetch('/api/user')
                     .then(res => res.json())
@@ -180,7 +244,7 @@ const practiceConfig = {
 function renderLessonCards() {
     let t1Prog = gameState.topicProgress ? (gameState.topicProgress['1'] || 1) : 1;
     let t2Prog = gameState.topicProgress ? (gameState.topicProgress['2'] || 1) : 1;
-    
+
     let bar1 = document.getElementById('progress-bar-1');
     let card1 = document.getElementById('lesson-card-1');
     if (bar1) {
@@ -303,14 +367,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Settings Toggles
     const soundToggle = document.getElementById('sound-toggle');
     const cameraToggle = document.getElementById('camera-toggle');
-    
+
     if (soundToggle) {
         soundToggle.checked = localStorage.getItem('saybim_sound') !== 'false';
         soundToggle.addEventListener('change', (e) => {
             localStorage.setItem('saybim_sound', e.target.checked);
         });
     }
-    
+
     if (cameraToggle) {
         cameraToggle.checked = localStorage.getItem('saybim_camera') !== 'false';
         cameraToggle.addEventListener('change', (e) => {
@@ -318,15 +382,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 3. Load Model (Crucial for Practice and Quizzes)
-    loadModel();
+    // 3. Load Model (Only on Practice page)
+    if (window.CURRENT_PAGE_TYPE === 'practice') {
+        loadModel();
+    }
 
     // 4. Handle Practice URL Parameters
     if (window.CURRENT_PAGE_TYPE === 'practice') {
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get('type') || 'alphabets';
         renderPracticeButtons(type);
-        
+
         // Immediate Number Notice: If numbers, show the overlay right away
         if (type === 'numbers') {
             const maintenanceOverlay = document.getElementById('maintenance-overlay');
@@ -376,7 +442,7 @@ async function initGame() {
         gameState.currentQuestionIndex = 0;
 
         // Mastery Quizzes: Topic 1 (L8) or Topic 2 (L9)
-        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || 
+        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
             (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
             currentRemainingTime = 180;
             startQuizTimer();
@@ -450,7 +516,7 @@ function startLeaderboardTimer() {
             timerSpan.innerText = `${diffDays}d ${diffHours.toString().padStart(2, '0')}h ${diffMinutes.toString().padStart(2, '0')}m`;
         }
     }
-    
+
     updateTimer();
     setInterval(updateTimer, 60000);
 }
@@ -476,7 +542,7 @@ function renderPracticeButtons(type) {
     if (!container) return;
 
     container.innerHTML = '';
-    const items = type === 'alphabets' 
+    const items = type === 'alphabets'
         ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
         : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
@@ -489,18 +555,18 @@ function renderPracticeButtons(type) {
             // Remove previous selections
             container.querySelectorAll('.quiz-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            
+
             const maintenanceOverlay = document.getElementById('maintenance-overlay');
             const cameraIndicator = document.getElementById('camera-active-status');
 
             if (type === 'numbers') {
                 if (maintenanceOverlay) maintenanceOverlay.style.display = 'flex';
                 if (cameraIndicator) cameraIndicator.style.display = 'none';
-                
+
                 // Do not open camera
                 gameState.targetLetter = null;
                 gameState.detectionPaused = true;
-                
+
                 // If camera is running, stop it
                 if (camera) {
                     camera.stop();
@@ -519,7 +585,7 @@ function renderPracticeButtons(type) {
 function startSinglePractice(category, target) {
     gameState.targetLetter = target;
     gameState.detectionPaused = false;
-    
+
     // UI Updates
     const placeholder = document.getElementById('practice-placeholder');
     const cameraContainer = document.getElementById('practice-camera-container');
@@ -529,9 +595,18 @@ function startSinglePractice(category, target) {
     if (placeholder) placeholder.style.display = 'none';
     if (cameraContainer) cameraContainer.style.display = 'block';
     if (maintenanceOverlay) maintenanceOverlay.style.display = 'none'; // Hide overlay when active
-    
+
     // Ensure camera is open
     openCameraModal(`Sign the letter/number: ${target}`);
+
+    // Update Reference Image
+    const refContainer = document.getElementById('reference-sign-container');
+    const refImg = document.getElementById('reference-sign-img');
+    if (refContainer && refImg) {
+        refContainer.style.display = 'block';
+        refImg.src = `/static/quiz_media/lesson2/${target}.jpg`;
+        refImg.onerror = () => { refContainer.style.display = 'none'; }; // Hide if image missing
+    }
 }
 
 function startPractice(category) {
@@ -558,7 +633,7 @@ function startPractice(category) {
         const activeUI = document.getElementById('active-session-ui');
         const placeholder = document.getElementById('practice-placeholder');
         const cameraContainer = document.getElementById('practice-camera-container');
-        
+
         if (categories) categories.style.display = 'none';
         if (activeUI) activeUI.style.display = 'block';
         if (placeholder) placeholder.style.display = 'none';
@@ -609,6 +684,18 @@ function updatePracticeUI() {
     if (targetWordEl) targetWordEl.innerText = currentItem;
     if (progressTextEl) progressTextEl.innerText = `${practiceSession.currentIndex + 1}/${total}`;
     if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
+
+    // Update Reference Image for Randomized Sessions
+    const refContainer = document.getElementById('reference-sign-container');
+    const refImg = document.getElementById('reference-sign-img');
+    if (refContainer && refImg) {
+        refContainer.style.display = 'block';
+        refImg.src = `/static/quiz_media/lesson2/${currentItem}.jpg`;
+        refImg.onerror = () => { refContainer.style.display = 'none'; };
+    }
+
+    // Sync target letter for AI detection
+    gameState.targetLetter = currentItem;
 }
 
 // ... (Quiz & Dashboard Logic same as before) ...
@@ -628,11 +715,11 @@ function updateQuizUI() {
     // Update Options
     const optionsContainer = document.querySelector('.quiz-options');
     optionsContainer.innerHTML = ''; // Clear previous options
-    
+
     // Reset sequence for new questions
     if (!gameState.selectedSequence) gameState.selectedSequence = [];
     gameState.selectedSequence = [];
-    
+
     // Check if we should use a 4-column layout
     let useFourColumns = false;
     if (!currentQ.media_url && currentQ.options.length === 4) {
@@ -649,7 +736,7 @@ function updateQuizUI() {
         const btn = document.createElement('button');
         btn.className = 'quiz-btn';
         btn.dataset.index = idx;
-        
+
         let innerHTML = '';
         if (media_url && !currentQ.media_url) {
             btn.style.display = 'flex';
@@ -664,9 +751,9 @@ function updateQuizUI() {
         } else {
             innerHTML = text;
         }
-        
+
         btn.innerHTML = innerHTML;
-        
+
         if (currentQ.type === 'Sequence') {
             btn.onclick = () => handleSequenceClick(btn, text);
         } else {
@@ -753,19 +840,26 @@ function updateDashboardStats() {
 
     // XP Bar Logic (Dynamic Scaling)
     if (xpFill && xpText) {
-        const L = gameState.level || 1;
+        let L = gameState.level || 1;
+        if (L > 100) L = 100;
+        
         const currentTotalXp = gameState.xp || 0;
-        
-        // Cumulative XP required for current level L
-        const xpAtLStart = 25 * (L - 1) * (L + 2);
-        // XP required to reach next level L+1 from L
-        const xpForNextGoal = 100 + (L - 1) * 50;
-        
-        const progressInLevel = Math.max(0, currentTotalXp - xpAtLStart);
-        const percentage = Math.min(100, (progressInLevel / xpForNextGoal) * 100);
-        
-        xpFill.style.width = `${percentage}%`;
-        xpText.innerText = `${Math.floor(progressInLevel)} / ${xpForNextGoal} XP to level up`;
+
+        if (L >= 100) {
+            xpFill.style.width = '100%';
+            xpText.innerText = "Max Level Reached!";
+        } else {
+            // Cumulative XP required for current level L
+            const xpAtLStart = 25 * (L - 1) * (L + 2);
+            // XP required to reach next level L+1 (Delta between L and L+1)
+            const xpForNextGoal = 100 + (L - 1) * 50;
+
+            const progressInLevel = Math.max(0, currentTotalXp - xpAtLStart);
+            const percentage = Math.min(100, (progressInLevel / xpForNextGoal) * 100);
+
+            xpFill.style.width = `${percentage}%`;
+            xpText.innerText = `${Math.floor(progressInLevel)} / ${xpForNextGoal} XP to level up`;
+        }
     }
 }
 
@@ -776,10 +870,10 @@ function playSound(type) {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
+
         if (type === 'correct') {
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
@@ -797,7 +891,7 @@ function playSound(type) {
             oscillator.start(audioCtx.currentTime);
             oscillator.stop(audioCtx.currentTime + 0.4);
         }
-    } catch(e) { console.error('Audio failed:', e); }
+    } catch (e) { console.error('Audio failed:', e); }
 }
 
 function checkAnswer(btnElement, answerValue) {
@@ -814,7 +908,6 @@ function checkAnswer(btnElement, answerValue) {
     });
 
     if (isCorrect) {
-        playSound('correct');
         btnElement.classList.add('correct');
         // Submit Correct
         fetch('/api/quiz/submit', {
@@ -823,10 +916,10 @@ function checkAnswer(btnElement, answerValue) {
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
             updateGameState(data);
+            playSound('correct');
             showQuizFeedback(true, answerValue, currentQ.correct_option);
         });
     } else {
-        playSound('incorrect');
         btnElement.classList.add('incorrect');
         // Submit Incorrect
         fetch('/api/quiz/submit', {
@@ -835,6 +928,7 @@ function checkAnswer(btnElement, answerValue) {
             body: JSON.stringify({ correct: false })
         }).then(res => res.json()).then(data => {
             updateGameState(data);
+            playSound('incorrect');
             showQuizFeedback(false, answerValue, currentQ.correct_option);
         });
     }
@@ -849,7 +943,7 @@ function nextQuestion() {
         fetch('/api/lesson/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 fully_completed: fullyCompleted,
                 topic_id: window.CURRENT_TOPIC_ID || 1,
                 lesson_id: window.CURRENT_LESSON_ID || 1
@@ -860,7 +954,7 @@ function nextQuestion() {
                 // or just the user properties directly
                 const userData = data.user || data;
                 updateGameState(userData);
-                
+
                 if (window.CURRENT_PAGE_TYPE === 'quiz') {
                     showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
                         window.location.href = '/';
@@ -886,7 +980,7 @@ function showGameOver() {
     if (gamemodal.classList.contains('modal-overlay')) {
         gamemodal.classList.add('active');
         if (window.CURRENT_PAGE_TYPE === 'quiz') {
-             gamemodal.style.display = 'flex';
+            gamemodal.style.display = 'flex';
         }
     }
 }
@@ -900,13 +994,13 @@ function refillHearts() {
         .then(data => {
             if (data.success) {
                 updateGameState(data.user);
-                
+
                 const gameOverModal = document.getElementById('game-over-modal');
-                if(gameOverModal) {
-                     gameOverModal.classList.remove('active');
-                     if(window.CURRENT_PAGE_TYPE === 'quiz') gameOverModal.style.display = 'none';
+                if (gameOverModal) {
+                    gameOverModal.classList.remove('active');
+                    if (window.CURRENT_PAGE_TYPE === 'quiz') gameOverModal.style.display = 'none';
                 }
-                
+
                 if (gameState.currentQuestionIndex < gameState.totalQuestions) {
                     if (window.CURRENT_PAGE_TYPE !== 'quiz') {
                         document.getElementById('quiz-modal').classList.add('active');
@@ -928,18 +1022,18 @@ function quitLesson() {
 
 function handleSequenceClick(btn, text) {
     if (btn.classList.contains('selected')) return;
-    
+
     gameState.selectedSequence.push(text);
     btn.classList.add('selected');
-    
+
     // Add number badge
     const badge = document.createElement('div');
     badge.className = 'sequence-badge';
     badge.innerText = gameState.selectedSequence.length;
     btn.appendChild(badge);
-    
+
     const currentQ = gameState.questions[gameState.currentQuestionIndex];
-    
+
     // Update Confirm Button
     const confirmBtn = document.getElementById('confirm-sequence-btn');
     if (confirmBtn) {
@@ -968,37 +1062,37 @@ function resetSequence() {
 function checkSequenceAnswer() {
     const currentQ = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = JSON.stringify(gameState.selectedSequence) === JSON.stringify(currentQ.correct_sequence);
-    
+
     const allBtns = document.querySelectorAll('.quiz-options .quiz-btn');
     allBtns.forEach(b => b.disabled = true);
-    
+
     const confirmBtn = document.getElementById('confirm-sequence-btn');
     if (confirmBtn) confirmBtn.disabled = true;
 
     if (isCorrect) {
-        playSound('correct');
         const selectedBtns = document.querySelectorAll('.quiz-options .quiz-btn.selected');
         selectedBtns.forEach(b => b.classList.add('correct'));
-        
+
         fetch('/api/quiz/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
             updateGameState(data);
+            playSound('correct');
             showQuizFeedback(true, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
         });
     } else {
-        playSound('incorrect');
         const selectedBtns = document.querySelectorAll('.quiz-options .quiz-btn.selected');
         selectedBtns.forEach(b => b.classList.add('incorrect'));
-        
+
         fetch('/api/quiz/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: false })
         }).then(res => res.json()).then(data => {
             updateGameState(data);
+            playSound('incorrect');
             showQuizFeedback(false, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
         });
     }
@@ -1008,27 +1102,27 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
     pauseQuizTimer();
     const overlay = document.getElementById('quiz-feedback-overlay');
     overlay.className = `feedback-overlay ${isCorrect ? 'correct' : 'incorrect'}`;
-    
+
     let html = `
         <div class="feedback-title">${isCorrect ? '<i class="fas fa-check-circle"></i> Brilliant!' : '<i class="fas fa-times-circle"></i> Not Quite...'}</div>
         <div class="feedback-details">
     `;
-    
+
     if (!isCorrect) {
         html += `<div class="feedback-word">You chose: <span>${userAnswer}</span></div>`;
         html += `<div class="feedback-word">Correct answer: <span>${correctAnswer}</span></div>`;
     }
-    
+
     html += `</div>
         <button class="feedback-ok-btn" id="feedback-ok-btn">OK</button>
     `;
-    
+
     overlay.innerHTML = html;
     overlay.style.display = 'flex';
-    
+
     document.getElementById('feedback-ok-btn').onclick = () => {
         overlay.style.display = 'none';
-        
+
         if (!isCorrect && gameState.hearts <= 0) {
             if (window.CURRENT_PAGE_TYPE !== 'quiz') {
                 closeModal('quiz-modal');
@@ -1037,7 +1131,7 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
         } else {
             nextQuestion();
             // Only resume timer for Mastery Review lessons
-            if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || 
+            if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
                 (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
                 startQuizTimer();
             }
@@ -1047,7 +1141,7 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
 
 function toggleHint() {
     const hint = document.getElementById('hint-popup');
-    
+
     if (gameState.questions && gameState.questions.length > 0) {
         const currentQ = gameState.questions[gameState.currentQuestionIndex];
         const hintText = hint.querySelector('p');
@@ -1055,7 +1149,7 @@ function toggleHint() {
             hintText.innerText = currentQ.hint;
         }
     }
-    
+
     hint.style.display = (hint.style.display === 'none' || hint.style.display === '') ? 'block' : 'none';
 }
 
@@ -1072,34 +1166,34 @@ window.onclick = function (event) {
 function submitFeedback() {
     const feedbackText = document.getElementById('feedback-text');
     const text = feedbackText.value.trim();
-    
+
     if (text === '') {
         showFloatMessage("Please enter some feedback first!", "warning");
         return;
     }
-    
+
     showFloatMessage("Sending feedback...", "info");
-    
+
     fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback: text })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showFloatMessage("Thank you for your feedback! Sent to developer telegram bot.");
-            feedbackText.value = '';
-            closeModal('feedback-modal');
-            document.getElementById('feedback-modal').style.display = 'none';
-        } else {
-            showFloatMessage(data.message || "Failed to send feedback.", "danger");
-        }
-    })
-    .catch(err => {
-        console.error("Feedback error:", err);
-        showFloatMessage("Error connecting to feedback server.", "danger");
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showFloatMessage("Thank you for your feedback! Sent to developer telegram bot.");
+                feedbackText.value = '';
+                closeModal('feedback-modal');
+                document.getElementById('feedback-modal').style.display = 'none';
+            } else {
+                showFloatMessage(data.message || "Failed to send feedback.", "danger");
+            }
+        })
+        .catch(err => {
+            console.error("Feedback error:", err);
+            showFloatMessage("Error connecting to feedback server.", "danger");
+        });
 }
 
 function openFeedbackModal() {
@@ -1127,7 +1221,7 @@ function showSubMenu(menu) {
 function previewAvatar(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const preview = document.getElementById('profile-avatar-preview');
             preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
         }
@@ -1144,35 +1238,35 @@ function updateProfile(e) {
         method: 'POST',
         body: formData
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showFloatMessage(data.message);
-            // Update UI elements if present
-            const nameDisplay = document.getElementById('user-name-display');
-            if (nameDisplay) nameDisplay.innerText = data.user.username;
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showFloatMessage(data.message);
+                // Update UI elements if present
+                const nameDisplay = document.getElementById('user-name-display');
+                if (nameDisplay) nameDisplay.innerText = data.user.username;
 
-            if (data.user.avatar) {
-                const sidebarAvatar = document.getElementById('sidebar-avatar');
-                if (sidebarAvatar) {
-                    sidebarAvatar.style.background = 'transparent';
-                    sidebarAvatar.innerHTML = `<img src="${data.user.avatar}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">`;
+                if (data.user.avatar) {
+                    const sidebarAvatar = document.getElementById('sidebar-avatar');
+                    if (sidebarAvatar) {
+                        sidebarAvatar.style.background = 'transparent';
+                        sidebarAvatar.innerHTML = `<img src="${data.user.avatar}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                } else {
+                    const sidebarAvatar = document.getElementById('sidebar-avatar');
+                    if (sidebarAvatar) {
+                        sidebarAvatar.innerHTML = data.user.username.charAt(0).toUpperCase();
+                    }
                 }
+
+                form.password.value = ''; // Clear password field for safety
             } else {
-                const sidebarAvatar = document.getElementById('sidebar-avatar');
-                if (sidebarAvatar) {
-                    sidebarAvatar.innerHTML = data.user.username.charAt(0).toUpperCase();
-                }
+                showFloatMessage("Error: " + data.message);
             }
-
-            form.password.value = ''; // Clear password field for safety
-        } else {
-            showFloatMessage("Error: " + data.message);
-        }
-    })
-    .catch(err => {
-        showFloatMessage("Failed to update profile: " + err.message);
-    });
+        })
+        .catch(err => {
+            showFloatMessage("Failed to update profile: " + err.message);
+        });
 }
 
 function confirmDeleteAccount() {
@@ -1180,16 +1274,16 @@ function confirmDeleteAccount() {
         fetch('/api/user/account', {
             method: 'DELETE'
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showFloatMessage(data.message, 'success', () => {
-                    window.location.href = '/login';
-                });
-            } else {
-                showFloatMessage("Error: " + data.message);
-            }
-        });
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showFloatMessage(data.message, 'success', () => {
+                        window.location.href = '/login';
+                    });
+                } else {
+                    showFloatMessage("Error: " + data.message);
+                }
+            });
     });
 }
 
@@ -1296,10 +1390,19 @@ async function predictGesture() {
             `;
         }
 
-        // Check if anything was detected (Requirement of specific alphabet removed)
+        // Enforce target matching if a specific target is set
         if (!gameState.detectionPaused && confidence > 0.7) {
-            sequence = [];
-            handleCorrectAnswer(predictedAction);
+            if (gameState.targetLetter) {
+                // If we have a target, only trigger success if it matches
+                if (predictedAction === gameState.targetLetter) {
+                    sequence = [];
+                    handleCorrectAnswer(predictedAction);
+                }
+            } else if (!practiceSession.active) {
+                // If we are in Freestyle Testing (no target, no active session),
+                // we don't trigger "Correct" automatically to avoid confusing feedback.
+                // The overlay already shows the detected letter.
+            }
         }
 
     } catch (err) {
@@ -1312,14 +1415,14 @@ async function predictGesture() {
 function handleCorrectAnswer(action) {
     if (gameState.detectionPaused) return; // Prevent double trigger
     gameState.detectionPaused = true;
-    
+
     // Stop Camera immediately for Alphabets Practice (as per user request: "camera off after complete 1 gesture")
     if (window.CURRENT_PAGE_TYPE === 'practice') {
         if (camera) {
             camera.stop();
             const videoElement = document.getElementById('webcam');
             if (videoElement) videoElement.style.opacity = '0.3';
-            
+
             // Hide camera active indicator
             const indicator = document.getElementById('camera-active-status');
             if (indicator) indicator.style.display = 'none';
@@ -1328,7 +1431,7 @@ function handleCorrectAnswer(action) {
 
     playSound('correct');
     showFloatMessage(`Correct! That is ${action}. +10 XP`);
-    
+
     // Notify Backend
     fetch('/api/practice/complete', {
         method: 'POST',
@@ -1340,11 +1443,11 @@ function handleCorrectAnswer(action) {
 
     practiceSession.currentIndex++;
 
-    if (practiceSession.currentIndex >= practiceSession.items.length) {
-        showFloatMessage(`Session Complete! +20 Diamonds`);
+    if (practiceSession.active && practiceSession.currentIndex >= practiceSession.items.length) {
+        showFloatMessage(`Session Complete!`);
         closeModal('camera-modal');
         if (camera) camera.stop();
-        
+
         if (gameState.currentLessonId) {
             let fullyCompleted = false;
             if (userProgress[gameState.currentLessonId] < 5) {
@@ -1376,12 +1479,17 @@ function handleCorrectAnswer(action) {
                     }
                 });
 
-            if (window.CURRENT_PAGE_TYPE === 'quiz' || window.CURRENT_PAGE_TYPE === 'practice') {
+            if (window.CURRENT_PAGE_TYPE === 'quiz') {
                 showFloatMessage("Practice session complete! Well done.", 'success', () => {
                     window.location.href = '/';
                 }, true);
             } else {
-                gameState.currentLessonId = null;
+                // On practice page, we don't force a reset/redirect
+                gameState.detectionPaused = false; 
+                if (practiceSession.active) {
+                    practiceSession.currentIndex = 0; // Restart session if multi-gesture
+                    updatePracticeUI();
+                }
             }
         }
     } else {
@@ -1410,7 +1518,7 @@ async function openCameraModal(customText) {
     if (window.CURRENT_PAGE_TYPE === 'practice') {
         const cameraContainer = document.getElementById('practice-camera-container');
         if (cameraContainer) cameraContainer.style.display = 'block';
-        
+
         // Show camera active indicator
         const indicator = document.getElementById('camera-active-status');
         if (indicator) indicator.style.display = 'flex';
@@ -1485,7 +1593,7 @@ function startQuizTimer() {
     if (quizTimerInterval) clearInterval(quizTimerInterval);
     const container = document.getElementById('quiz-timer-container');
     if (container) container.style.display = 'flex';
-    
+
     quizTimerInterval = setInterval(() => {
         if (currentRemainingTime <= 0) {
             pauseQuizTimer();
@@ -1493,7 +1601,7 @@ function startQuizTimer() {
             return;
         }
         currentRemainingTime--;
-        
+
         let m = Math.floor(currentRemainingTime / 60);
         let s = currentRemainingTime % 60;
         const display = document.getElementById('quiz-timer-display');
@@ -1530,7 +1638,7 @@ function buyTime() {
                     modal.classList.remove('active');
                     modal.style.display = 'none';
                 }
-                
+
                 currentRemainingTime += 30;
                 startQuizTimer();
             }

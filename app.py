@@ -44,7 +44,7 @@ def calculate_level(xp):
     # Solves 25(L-1)(L+2) <= xp
     # L = (-1 + sqrt(9 + 0.16 * xp)) / 2
     level = math.floor((-1 + math.sqrt(9 + 0.16 * xp)) / 2)
-    return max(1, level)
+    return min(100, max(1, level))
 
 def get_xp_for_level(level):
     if level <= 1: return 0
@@ -315,6 +315,12 @@ def complete_practice():
     user.xp = (user.xp or 0) + 10
     user.weekly_xp = (user.weekly_xp or 0) + 10
     
+    # Check level up
+    new_level = calculate_level(user.xp or 0)
+    if new_level > (user.level or 1):
+        user.level = new_level
+        user.diamonds = (user.diamonds or 0) + 100
+    
     user.commit()
     return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}! +10 XP'})
 
@@ -362,10 +368,10 @@ def complete_lesson():
         user.weekly_xp = (user.weekly_xp or 0) + 50
         message = "Lesson Completed! +50 XP"
     
-    new_level = 1 + ((user.xp or 0) // 100)
+    new_level = calculate_level(user.xp or 0)
     if new_level > (user.level or 1):
         user.level = new_level
-        user.diamonds = (user.diamonds or 0) + 50 # Level up bonus
+        user.diamonds = (user.diamonds or 0) + 100 # Level up bonus
         
     user.commit()
     new_badges = check_badges(user)
