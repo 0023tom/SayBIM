@@ -39,6 +39,11 @@ from quiz_data import generate_topic_quiz
 # Helper to get or create default user
 import math
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.png', mimetype='image/png')
+
 def calculate_level(xp):
     if xp < 100: return 1
     # Solves 25(L-1)(L+2) <= xp
