@@ -369,9 +369,10 @@ def complete_lesson():
             user.topic_progress = json.dumps(progress_dict)
             
     else:
-        user.xp = (user.xp or 0) + 50
-        user.weekly_xp = (user.weekly_xp or 0) + 50
-        message = "Lesson Completed! +50 XP"
+        xp_reward = 50
+        user.xp = (user.xp or 0) + xp_reward
+        user.weekly_xp = (user.weekly_xp or 0) + xp_reward
+        message = f"Lesson Completed! +{xp_reward} XP bonus"
     
     new_level = calculate_level(user.xp or 0)
     if new_level > (user.level or 1):
@@ -384,6 +385,7 @@ def complete_lesson():
     return jsonify({
         'success': True,
         'message': message,
+        'reward_xp': xp_reward,
         'user': {
             **user.to_dict(),
             'badges': DataManager.get_user_badges(user.id)

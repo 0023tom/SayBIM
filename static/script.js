@@ -12,8 +12,9 @@ let gameState = {
     questions: [],
     questions: [],
     username: '',
-    detectionPaused: true, // New: Pause AI until button clicked
-    targetLetter: null     // New: Track what we are looking for
+    detectionPaused: true, 
+    targetLetter: null,    
+    sessionXp: 0           // Track XP gained in current session
 };
 
 let quizTimerInterval = null;
@@ -524,6 +525,7 @@ function startLeaderboardTimer() {
 function openLesson(lessonId, lessonName) {
     gameState.currentLessonId = lessonId;
     gameState.currentQuestionIndex = 0;
+    gameState.sessionXp = 0; // Reset session XP
     if (gameState.hearts <= 0) {
         showGameOver();
         return;
@@ -841,24 +843,27 @@ function updateDashboardStats() {
     // XP Bar Logic (Dynamic Scaling)
     if (xpFill && xpText) {
         let L = gameState.level || 1;
-        if (L > 100) L = 100;
-        
         const currentTotalXp = gameState.xp || 0;
 
         if (L >= 100) {
             xpFill.style.width = '100%';
-            xpText.innerText = "Max Level Reached!";
+            xpText.innerText = "Level 100 - Max Level Reach!";
         } else {
-            // Cumulative XP required for current level L
+            // Formula: XP = 25 * (L-1) * (L+2)
             const xpAtLStart = 25 * (L - 1) * (L + 2);
-            // XP required to reach next level L+1 (Delta between L and L+1)
-            const xpForNextGoal = 100 + (L - 1) * 50;
+            
+            // Goal XP at end of level L (which is xpAtLStart for level L+1)
+            const goalXp = 25 * L * (L + 3);
+            
+            // Delta XP needed GROW from current level L to L+1
+            const xpForNextGoal = goalXp - xpAtLStart; 
 
+            // Current progress within the current level's bracket
             const progressInLevel = Math.max(0, currentTotalXp - xpAtLStart);
             const percentage = Math.min(100, (progressInLevel / xpForNextGoal) * 100);
 
             xpFill.style.width = `${percentage}%`;
-            xpText.innerText = `${Math.floor(progressInLevel)} / ${xpForNextGoal} XP to level up`;
+            xpText.innerText = `${Math.floor(progressInLevel)} / ${Math.floor(xpForNextGoal)} XP to level up`;
         }
     }
 }
@@ -915,6 +920,7 @@ function checkAnswer(btnElement, answerValue) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
+            gameState.sessionXp += 10; // Track in session
             updateGameState(data);
             playSound('correct');
             showQuizFeedback(true, answerValue, currentQ.correct_option);
@@ -1078,6 +1084,7 @@ function checkSequenceAnswer() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
+            gameState.sessionXp += 10;
             updateGameState(data);
             playSound('correct');
             showQuizFeedback(true, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
@@ -1469,9 +1476,18 @@ function handleCorrectAnswer(action) {
                         gameState.streak = data.user.streak;
                         gameState.xp = data.user.xp;
                         gameState.diamonds = data.user.diamonds;
-                        if (fullyCompleted && data.message) {
-                            showFloatMessage(data.message);
+                        
+                        // Show total XP gained in the final message
+                        const totalGained = gameState.sessionXp + (data.reward_xp || 0);
+                        const finalMsg = `Lesson Accomplished! You earned a total of ${totalGained} XP!`;
+                        
+                        if (fullyCompleted) {
+                            showFloatMessage(finalMsg);
+                        } else {
+                            // If just a step completion
+                            showFloatMessage(finalMsg);
                         }
+
                         if (window.CURRENT_PAGE_TYPE !== 'quiz') {
                             updateDashboardStats();
                             renderLessonCards();
