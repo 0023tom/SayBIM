@@ -27,7 +27,7 @@
         <div style="display: flex; flex: 1; flex-direction: column; overflow-y: auto; padding: 40px; background: #fbfcfe;">
             
             <!-- Quiz Utilities Bar -->
-            <div style="position: relative; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 40px;">
+            <div id="quiz-header" style="position: relative; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 30px;">
                 
                 <!-- Grouped Progress Bar & Counter (Centered) -->
                 <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 15px; width: 400px; max-width: 45%;">
@@ -47,7 +47,7 @@
                 </div>
 
                 <!-- Utilities (Hint, Heart & Close) -->
-                <div style="display: flex; gap: 15px; align-items: center; z-index: 2;">
+                <div id="quiz-utils-bar" style="display: flex; gap: 15px; align-items: center; z-index: 2;">
                     <button style="background: #fdfdfd; padding: 5px 15px; border-radius: 20px; border: 1px solid #eee; display: flex; align-items: center; font-size: 0.9em; box-shadow: var(--shadow-soft); cursor: pointer; transition: all 0.2s;"
                         onclick="toggleHint()" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fdfdfd'">
                         <i class="fas fa-lightbulb" style="color: #ffc107; margin-right: 5px;"></i> Hint
@@ -61,8 +61,14 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
+
+                <!-- Power Up Row (Below Utilities) -->
+                <div id="quiz-powerup-container" style="position: absolute; top: 100%; right: 0; margin-top: 10px; display: flex; gap: 10px; z-index: 1;">
+                    <!-- Populated by script.js -->
+                </div>
             </div>
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 900px; margin: 0 auto; width: 100%;">
+
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 900px; margin: 0 auto; width: 100%;">
             <div class="quiz-image" style="width: 220px; height: 220px; margin-bottom: 30px;">
                 <i class="fas fa-hands-asl-interpreting" style="font-size: 5em; color: var(--text-secondary);"></i>
             </div>

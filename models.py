@@ -21,6 +21,11 @@ class User(db.Model):
     weekly_xp = db.Column(db.Integer, default=0)
     last_weekly_reset = db.Column(db.DateTime, nullable=True)
     topic_progress = db.Column(db.String(500), default='{}')
+    
+    # Shop items
+    shield_count = db.Column(db.Integer, default=0)
+    timer_freeze_count = db.Column(db.Integer, default=0)
+    xp_boost_expiry = db.Column(db.DateTime, nullable=True)
 
     def update_streak(self):
         today = date.today()
@@ -78,7 +83,11 @@ class User(db.Model):
             'diamonds': self.diamonds,
             'streak': self.streak,
             'topic_progress': self.topic_progress,
-            'next_heart_in_seconds': next_heart_in_seconds
+            'next_heart_in_seconds': next_heart_in_seconds,
+            'shield_count': self.shield_count,
+            'timer_freeze_count': self.timer_freeze_count,
+            'xp_boost_active': self.xp_boost_expiry > datetime.utcnow() if self.xp_boost_expiry else False,
+            'xp_boost_expiry': (self.xp_boost_expiry.isoformat() + 'Z') if self.xp_boost_expiry else None
         }
 
 class QuizResult(db.Model):

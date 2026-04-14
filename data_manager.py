@@ -1,5 +1,6 @@
 from models import db, User, QuizResult, UserBadge
 from firebase_config import db_firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 from datetime import datetime, date, timedelta
 import os
 
@@ -23,7 +24,8 @@ class UserWrapper:
             'id', 'username', 'email', 'avatar', 'password_hash',
             'xp', 'weekly_xp', 'level', 'hearts', 'diamonds', 'streak',
             'last_streak_date', 'last_heart_update', 'last_weekly_reset',
-            'created_at', 'topic_progress'
+            'created_at', 'topic_progress',
+            'shield_count', 'timer_freeze_count', 'xp_boost_expiry'
         }
         if name in known_db_fields:
             return None
@@ -55,6 +57,18 @@ class UserWrapper:
             elapsed = (datetime.utcnow() - last_heart_update).total_seconds()
             next_heart_in_seconds = max(0, (6 * 3600) - elapsed)
 
+        xp_boost_expiry = self.data.get('xp_boost_expiry')
+        xp_boost_active = False
+        if xp_boost_expiry:
+            # Handle string from Firestore or SQLAlchemy
+            if isinstance(xp_boost_expiry, str):
+                xp_boost_expiry = datetime.fromisoformat(xp_boost_expiry)
+            # Ensure it is naive for comparison (Firestore returns aware)
+            if hasattr(xp_boost_expiry, 'tzinfo') and xp_boost_expiry.tzinfo is not None:
+                xp_boost_expiry = xp_boost_expiry.replace(tzinfo=None)
+            
+            xp_boost_active = xp_boost_expiry > datetime.utcnow()
+
         return {
             'id': self.data.get('id'),
             'username': self.data.get('username'),
@@ -67,7 +81,11 @@ class UserWrapper:
             'diamonds': self.data.get('diamonds', 0),
             'streak': self.data.get('streak', 0),
             'topic_progress': self.data.get('topic_progress', '{}'),
-            'next_heart_in_seconds': next_heart_in_seconds
+            'next_heart_in_seconds': next_heart_in_seconds,
+            'shield_count': self.data.get('shield_count', 0),
+            'timer_freeze_count': self.data.get('timer_freeze_count', 0),
+            'xp_boost_active': xp_boost_active,
+            'xp_boost_expiry': (xp_boost_expiry.isoformat() + 'Z') if hasattr(xp_boost_expiry, 'isoformat') else xp_boost_expiry
         }
 
     def update_streak(self):
@@ -140,7 +158,7 @@ class DataManager:
     def verify_username_uniqueness(username, exclude_user_id=None):
         if USE_FIREBASE:
             users_ref = db_firestore.collection('users')
-            query = users_ref.where('username', '==', username).stream()
+            query = users_ref.where(filter=FieldFilter('username', '==', username)).stream()
             for doc in query:
                 if exclude_user_id and doc.id == str(exclude_user_id):
                     continue
@@ -156,7 +174,7 @@ class DataManager:
     def verify_email_uniqueness(email, exclude_user_id=None):
         if USE_FIREBASE:
             users_ref = db_firestore.collection('users')
-            query = users_ref.where('email', '==', email).stream()
+            query = users_ref.where(filter=FieldFilter('email', '==', email)).stream()
             for doc in query:
                 if exclude_user_id and doc.id == str(exclude_user_id):
                     continue
@@ -183,7 +201,7 @@ class DataManager:
     def get_user_by_username(username):
         if USE_FIREBASE:
             users_ref = db_firestore.collection('users')
-            query = users_ref.where('username', '==', username).limit(1).stream()
+            query = users_ref.where(filter=FieldFilter('username', '==', username)).limit(1).stream()
             for doc in query:
                 return UserWrapper({**doc.to_dict(), 'id': doc.id})
             return None
@@ -196,7 +214,7 @@ class DataManager:
     def get_user_by_email(email):
         if USE_FIREBASE:
             users_ref = db_firestore.collection('users')
-            query = users_ref.where('email', '==', email).limit(1).stream()
+            query = users_ref.where(filter=FieldFilter('email', '==', email)).limit(1).stream()
             for doc in query:
                 return UserWrapper({**doc.to_dict(), 'id': doc.id})
             return None
@@ -264,7 +282,7 @@ class DataManager:
     def get_user_badges(user_id):
         if USE_FIREBASE:
             badges_ref = db_firestore.collection('user_badges')
-            query = badges_ref.where('user_id', '==', str(user_id)).stream()
+            query = badges_ref.where(filter=FieldFilter('user_id', '==', str(user_id))).stream()
             return [doc.to_dict()['badge_name'] for doc in query]
         else:
             user = User.query.get(user_id)
@@ -275,11 +293,11 @@ class DataManager:
         if USE_FIREBASE:
             user_id = str(user_id)
             # Delete badges
-            badges = db_firestore.collection('user_badges').where('user_id', '==', user_id).stream()
+            badges = db_firestore.collection('user_badges').where(filter=FieldFilter('user_id', '==', user_id)).stream()
             for b in badges: b.reference.delete()
             
             # Delete quiz results
-            results = db_firestore.collection('quiz_results').where('user_id', '==', user_id).stream()
+            results = db_firestore.collection('quiz_results').where(filter=FieldFilter('user_id', '==', user_id)).stream()
             for r in results: r.reference.delete()
             
             # Delete user

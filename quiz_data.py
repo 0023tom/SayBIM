@@ -16,7 +16,7 @@ SIGN_TO_MEDIA = {
     "Selamat Tengah Hari": get_media_url("Good_Afternoon.jpg"),
     "Selamat Petang": get_media_url("Good_Evening.jpg"),
     "Selamat Malam": get_media_url("Good_Night.jpg"),
-    "Selamat (I)": get_media_url("Well.jpg"),
+    "Selamat": get_media_url("Well.jpg"),
     "Selamat Datang": get_media_url("Welcome.jpg"),
     "Maaf (Excuse)": get_media_url("Excuse.jpg"),
     "Maaf (Sorry)": get_media_url("Sorry.jpg"),
@@ -124,7 +124,7 @@ SIGN_HINTS = {
         "conceptual": "Greeting used before going to bed.",
         "action": "Sign for 'Safe/Well' followed by hands closing together to rest."
     },
-    "Selamat (I)": {
+    "Selamat": {
         "conceptual": "The base word for 'Safe' or 'Good'.",
         "action": "Fists pulling back towards the body, symbolizing safety."
     },
@@ -314,12 +314,12 @@ TOPIC_1_DATA = {
         {
             "type": "Visual",
             "text": "What does this sign mean?",
-            "target": "Selamat (I)",
+            "target": "Selamat",
             "media_url": get_media_url("Well.jpg")
         },
         {
             "type": "Logic",
-            "text": "Which sign is used at 11:00 PM?",
+            "text": "Which sign is used at 9:00 PM?",
             "target": "Selamat Malam",
             "media_url": None
         },
@@ -332,7 +332,7 @@ TOPIC_1_DATA = {
         {
             "type": "Visual",
             "text": "What does this sign mean?",
-            "target": "Selamat (I)",
+            "target": "Selamat",
             "media_url": get_media_url("Well.jpg")
         }
     ],
@@ -351,7 +351,7 @@ TOPIC_1_DATA = {
         },
         {
             "type": "Scenario",
-            "text": "You are entering a café at 6:00 PM. You sign:",
+            "text": "You are entering a café at 3:00 PM. You sign:",
             "target": "Selamat Petang",
             "media_url": None
         },
@@ -623,7 +623,7 @@ TOPIC_2_DATA = {
 TOPIC_1_POOL = [
     "Hai / Hello", "Assalamualaikum", "Waalaikumussalam", "Apa Khabar", "Khabar Baik",
     "Terima Kasih", "Sama-sama", "Sila", "Selamat Pagi", "Selamat Tengah Hari",
-    "Selamat Petang", "Selamat Malam", "Selamat (I)", "Selamat Datang",
+    "Selamat Petang", "Selamat Malam", "Selamat", "Selamat Datang",
     "Maaf (Excuse)", "Maaf (Sorry)", "Tolong", "Selamat Jalan", "Salam",
     "Salam (Regards)", "Tahniah", "Selamat Hari Jadi", "Selamat Ulangtahun"
 ]

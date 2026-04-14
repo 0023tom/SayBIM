@@ -411,10 +411,16 @@ function updateGameState(userData) {
     gameState.xp = userData.xp;
     gameState.nextHeartIn = userData.next_heart_in_seconds || 0;
     gameState.username = userData.username;
+    gameState.shieldCount = userData.shield_count || 0;
+    gameState.timerFreezeCount = userData.timer_freeze_count || 0;
+    gameState.xpBoostActive = userData.xp_boost_active || false;
+    gameState.xpBoostExpiry = userData.xp_boost_expiry || null;
+    
     if (userData.topic_progress) {
         gameState.topicProgress = typeof userData.topic_progress === 'string' ? JSON.parse(userData.topic_progress) : userData.topic_progress;
     }
     updateDashboardStats();
+    updateShopUI();
 }
 
 async function initGame() {
@@ -701,6 +707,31 @@ function updatePracticeUI() {
 }
 
 // ... (Quiz & Dashboard Logic same as before) ...
+
+function updateQuizItems() {
+    const utilsBar = document.getElementById('quiz-utils-bar'); // Utilities bar
+    if (!utilsBar) return;
+
+    // Remove existing shop item buttons in quiz
+    utilsBar.querySelectorAll('.quiz-item-btn').forEach(b => b.remove());
+
+    // Add Timer Freeze button if Mastery Lesson and have count
+    const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
+                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9);
+    
+    if (isMastery && gameState.timerFreezeCount > 0) {
+        const powerupContainer = document.getElementById('quiz-powerup-container');
+        if (powerupContainer) {
+            powerupContainer.innerHTML = ''; // Clear existing buttons
+            const freezeBtn = document.createElement('button');
+            freezeBtn.className = 'power-up-btn';
+            freezeBtn.onclick = useTimerFreeze;
+            freezeBtn.innerHTML = `<i class="fas fa-snowflake"></i> Power Up: Freeze (${gameState.timerFreezeCount})`;
+            powerupContainer.appendChild(freezeBtn);
+        }
+    }
+}
+
 function updateQuizUI() {
     const currentQ = gameState.questions[gameState.currentQuestionIndex];
     const progress = ((gameState.currentQuestionIndex + 1) / gameState.totalQuestions) * 100;
@@ -709,6 +740,9 @@ function updateQuizUI() {
     const totalQEl = document.getElementById('total-questions');
     if (totalQEl) totalQEl.innerText = gameState.totalQuestions;
     document.getElementById('heart-count').innerText = gameState.hearts;
+
+    // Update item usage buttons/indicators in Quiz
+    updateQuizItems();
 
     // Update Question
     const quizContent = document.querySelector('.modal-content h3');
@@ -836,7 +870,11 @@ function updateDashboardStats() {
         }
         heartEl.innerHTML = text;
     }
-    if (diamondEl) diamondEl.innerText = gameState.diamonds;
+    if (diamondEl) {
+        diamondEl.innerText = gameState.diamonds;
+        const shopDiamondEl = document.getElementById('shop-diamond-count');
+        if (shopDiamondEl) shopDiamondEl.innerText = gameState.diamonds;
+    }
     if (streakEl) streakEl.innerText = gameState.streak;
     if (levelEl) levelEl.innerText = `Level ${gameState.level}`;
 
@@ -866,6 +904,123 @@ function updateDashboardStats() {
             xpText.innerText = `${Math.floor(progressInLevel)} / ${Math.floor(xpForNextGoal)} XP to level up`;
         }
     }
+
+    // Header items update
+    updateInventoryUI();
+}
+
+function updateInventoryUI() {
+    const headerContainer = document.getElementById('header-active-items');
+    const divider = document.getElementById('header-items-divider');
+    if (!headerContainer) return;
+
+    headerContainer.innerHTML = '';
+
+    const hasItems = gameState.xpBoostActive || gameState.shieldCount > 0 || gameState.timerFreezeCount > 0;
+    if (divider) divider.style.display = hasItems ? 'block' : 'none';
+
+    if (!hasItems) return;
+
+    // 1. Double XP Boost
+    if (gameState.xpBoostActive) {
+        const item = document.createElement('div');
+        item.style = "display: flex; align-items: center; gap: 5px; background: #f3f0ff; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 700; color: #7c3aed; border: 1px solid #e9d5ff;";
+        item.innerHTML = `<i class="fas fa-rocket"></i> <span id="header-xp-timer">...</span>`;
+        headerContainer.appendChild(item);
+        startXPBoostCountdown();
+    }
+
+    // 2. Shields
+    if (gameState.shieldCount > 0) {
+        const item = document.createElement('div');
+        item.style = "display: flex; align-items: center; gap: 5px; background: #fffbeb; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 700; color: #b45309; border: 1px solid #fef3c7;";
+        item.innerHTML = `<i class="fas fa-shield-alt"></i> ${gameState.shieldCount}`;
+        headerContainer.appendChild(item);
+    }
+
+    // 3. Timer Freezes
+    if (gameState.timerFreezeCount > 0) {
+        const item = document.createElement('div');
+        item.style = "display: flex; align-items: center; gap: 5px; background: #f0f9ff; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 700; color: #0369a1; border: 1px solid #e0f2fe;";
+        item.innerHTML = `<i class="fas fa-snowflake"></i> ${gameState.timerFreezeCount}`;
+        headerContainer.appendChild(item);
+    }
+}
+
+let xpBoostTimerInterval = null;
+function startXPBoostCountdown() {
+    if (xpBoostTimerInterval) clearInterval(xpBoostTimerInterval);
+    
+    const timerDisplay = document.getElementById('header-xp-timer');
+    if (!timerDisplay || !gameState.xpBoostExpiry) return;
+
+    function update() {
+        const now = new Date();
+        const expiry = new Date(gameState.xpBoostExpiry);
+        const diff = expiry - now;
+
+        if (diff <= 0) {
+            gameState.xpBoostActive = false;
+            clearInterval(xpBoostTimerInterval);
+            updateInventoryUI();
+            return;
+        }
+
+        const m = Math.floor(diff / 1000 / 60);
+        const s = Math.floor((diff / 1000) % 60);
+        timerDisplay.innerText = `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    update();
+    xpBoostTimerInterval = setInterval(update, 1000);
+}
+
+function updateShopUI() {
+    const shopContainer = document.getElementById('shop-items-grid');
+    if (!shopContainer) return;
+
+    // Update Streak Repair card visibility/availability
+    // If streak > 0, we could disable it or mark as "Not Needed"
+    const streakRepairCard = shopContainer.querySelector('[data-item="streak_repair"]');
+    if (streakRepairCard) {
+        const btn = streakRepairCard.querySelector('.buy-btn');
+        if (gameState.streak > 0) {
+            // Optional: Mark as not needed
+        }
+    }
+}
+
+function buyItem(itemId) {
+    const btn = event ? event.target : null;
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Buying...';
+    }
+
+    fetch('/api/shop/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: itemId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showFloatMessage(data.message, 'success');
+            updateGameState(data.user);
+        } else {
+            showFloatMessage(data.message, 'danger');
+        }
+    })
+    .catch(err => {
+        console.error("Purchase error:", err);
+        showFloatMessage("Failed to connect to shop.", "danger");
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Buy Now';
+        }
+    });
 }
 
 // Audio Output function
@@ -920,10 +1075,10 @@ function checkAnswer(btnElement, answerValue) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
-            gameState.sessionXp += 10; // Track in session
+            gameState.sessionXp += (data.xp_gain || 10);
             updateGameState(data);
             playSound('correct');
-            showQuizFeedback(true, answerValue, currentQ.correct_option);
+            showQuizFeedback(true, answerValue, currentQ.correct_option, data.message);
         });
     } else {
         btnElement.classList.add('incorrect');
@@ -1084,10 +1239,10 @@ function checkSequenceAnswer() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correct: true })
         }).then(res => res.json()).then(data => {
-            gameState.sessionXp += 10;
+            gameState.sessionXp += (data.xp_gain || 10);
             updateGameState(data);
             playSound('correct');
-            showQuizFeedback(true, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '));
+            showQuizFeedback(true, gameState.selectedSequence.join(' '), currentQ.correct_sequence.join(' '), data.message);
         });
     } else {
         const selectedBtns = document.querySelectorAll('.quiz-options .quiz-btn.selected');
@@ -1105,7 +1260,7 @@ function checkSequenceAnswer() {
     }
 }
 
-function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
+function showQuizFeedback(isCorrect, userAnswer, correctAnswer, xpMessage = "") {
     pauseQuizTimer();
     const overlay = document.getElementById('quiz-feedback-overlay');
     overlay.className = `feedback-overlay ${isCorrect ? 'correct' : 'incorrect'}`;
@@ -1118,6 +1273,8 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer) {
     if (!isCorrect) {
         html += `<div class="feedback-word">You chose: <span>${userAnswer}</span></div>`;
         html += `<div class="feedback-word">Correct answer: <span>${correctAnswer}</span></div>`;
+    } else if (xpMessage) {
+        html += `<div class="feedback-word" style="color: #48bb78; font-weight: 800; font-size: 1.2em;">${xpMessage}</div>`;
     }
 
     html += `</div>
@@ -1437,7 +1594,7 @@ function handleCorrectAnswer(action) {
     }
 
     playSound('correct');
-    showFloatMessage(`Correct! That is ${action}. +10 XP`);
+    // showFloatMessage(`Correct! That is ${action}. +10 XP`); // Removed hardcoded message
 
     // Notify Backend
     fetch('/api/practice/complete', {
@@ -1446,6 +1603,9 @@ function handleCorrectAnswer(action) {
         body: JSON.stringify({ word: action })
     }).then(res => res.json()).then(data => {
         updateGameState(data.user || data);
+        if (data.message) {
+            showFloatMessage(data.message);
+        }
     });
 
     practiceSession.currentIndex++;
@@ -1611,6 +1771,8 @@ function startQuizTimer() {
     if (container) container.style.display = 'flex';
 
     quizTimerInterval = setInterval(() => {
+        if (isTimerFrozen) return; // Skip tick if frozen
+
         if (currentRemainingTime <= 0) {
             pauseQuizTimer();
             showTimeUp();
@@ -1641,23 +1803,47 @@ function showTimeUp() {
 }
 
 function buyTime() {
-    fetch('/api/user/buy_time', { method: 'POST' })
-        .then(res => {
-            if (res.ok) return res.json();
-            throw new Error("Not enough diamonds");
-        })
-        .then(data => {
-            if (data.success) {
-                gameState.diamonds = data.user.diamonds;
-                const modal = document.getElementById('time-up-modal');
-                if (modal) {
-                    modal.classList.remove('active');
-                    modal.style.display = 'none';
-                }
+    // Legacy buyTime now uses the shop refill logic for diamonds
+    buyItem('timer_freeze');
+    
+    // Auto-close time-up if they have gems and just bought more time technically?
+    // Actually, let's keep it separate or just use the Shop Item logic.
+}
 
-                currentRemainingTime += 30;
-                startQuizTimer();
+let isTimerFrozen = false;
+function useTimerFreeze() {
+    if (isTimerFrozen) return;
+    if (gameState.timerFreezeCount <= 0) {
+        showFloatMessage("You don't have any Timer Freezes!", "warning");
+        return;
+    }
+
+    fetch('/api/shop/use_timer_freeze', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            isTimerFrozen = true;
+            gameState.timerFreezeCount--;
+            updateDashboardStats();
+            
+            const display = document.getElementById('quiz-timer-display');
+            const container = document.getElementById('quiz-timer-container');
+            if (container) {
+                container.style.background = '#e0f2fe';
+                container.style.color = 'var(--accent-blue)';
+                container.style.border = '2px solid var(--accent-blue)';
             }
-        })
-        .catch(err => showFloatMessage(err.message, 'danger'));
+            
+            showFloatMessage("Time Frozen for 20 seconds!", "success");
+            
+            setTimeout(() => {
+                isTimerFrozen = false;
+                if (container) {
+                    container.style.background = '#fee2e2';
+                    container.style.color = 'var(--accent-red)';
+                    container.style.border = 'none';
+                }
+            }, 20000);
+        }
+    });
 }

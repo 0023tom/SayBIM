@@ -71,7 +71,7 @@
                     Practice
                 </a>
             </li>
-            <li class="nav-item" style="display: none;">
+            <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-store"></i></span>
                     Shop
@@ -113,6 +113,14 @@
             <!-- Progress could go here too, mimicking the image -->
 
             <div class="stats-container">
+                <!-- Active Items Icons (Now on Left) -->
+                <div id="header-active-items" style="display: flex; gap: 8px; align-items: center;">
+                    <!-- Populated by script.js -->
+                </div>
+
+                <!-- Divider -->
+                <div id="header-items-divider" style="width: 1px; height: 20px; background: #eee; margin: 0 10px; display: none;"></div>
+
                 <div class="stat-item">
                     <span class="stat-icon" style="color: #ff9800;"><i class="fas fa-fire"></i></span>
                     <span id="main-streak-count">0</span>
@@ -235,11 +243,86 @@
             </section>
 
             <!-- Shop Section -->
-            <section id="shop-section" style="display: none; height: 60vh; text-align: center;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <i class="fas fa-hammer" style="font-size: 5em; color: var(--text-secondary); margin-bottom: 20px;"></i>
-                    <h2 class="section-title">SayBIM Shop</h2>
-                    <p style="color: var(--text-secondary); font-size: 1.2em;">The shop is under development. Soon you'll be able to spend your gems here!</p>
+            <section id="shop-section" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 30px;">
+                    <h2 class="section-title" style="margin-bottom: 0;">SayBIM Shop</h2>
+                </div>
+
+                <div class="lesson-grid" id="shop-items-grid">
+                    <!-- Heart Refill -->
+                    <div class="lesson-card shop-card" data-item="heart_refill">
+                        <div class="shop-item-icon">
+                            <img src="/static/images/shop/heart_refill.png" alt="Heart Refill">
+                        </div>
+                        <div class="lesson-title">Heart Refill</div>
+                        <div class="lesson-desc">Instant recovery! Refills your heart meter to 5/5 so you can keep learning.</div>
+                        <div class="shop-footer">
+                            <div class="item-price">
+                                <i class="fas fa-gem"></i> 150
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('heart_refill')">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <!-- Timer Freeze -->
+                    <div class="lesson-card shop-card" data-item="timer_freeze">
+                        <div class="shop-item-icon">
+                            <img src="/static/images/shop/timer_freeze.png" alt="Timer Freeze">
+                        </div>
+                        <div class="lesson-title">Timer Freeze</div>
+                        <div class="lesson-desc">Pausable time! Stops the clock for 20 seconds during any mastery quiz.</div>
+                        <div class="shop-footer">
+                            <div class="item-price">
+                                <i class="fas fa-gem"></i> 80
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('timer_freeze')">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <!-- Second Chance -->
+                    <div class="lesson-card shop-card" data-item="shield">
+                        <div class="shop-item-icon">
+                            <img src="/static/images/shop/shield.png" alt="Shield">
+                        </div>
+                        <div class="lesson-title">Second Chance</div>
+                        <div class="lesson-desc">Protective barrier! Automatically prevents heart loss on your next wrong answer.</div>
+                        <div class="shop-footer">
+                            <div class="item-price">
+                                <i class="fas fa-gem"></i> 100
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('shield')">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <!-- 2x XP Card -->
+                    <div class="lesson-card shop-card" data-item="xp_card">
+                        <div class="shop-item-icon">
+                            <img src="/static/images/shop/xp_card.png" alt="2x XP Card">
+                        </div>
+                        <div class="lesson-title">2x XP Card</div>
+                        <div class="lesson-desc">Double progress! Earn 2x Experience Points (XP) for the next 30 minutes.</div>
+                        <div class="shop-footer">
+                            <div class="item-price">
+                                <i class="fas fa-gem"></i> 300
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('xp_card')">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <!-- Streak Repair -->
+                    <div class="lesson-card shop-card" data-item="streak_repair">
+                        <div class="shop-item-icon">
+                            <img src="/static/images/shop/streak_repair.png" alt="Streak Repair">
+                        </div>
+                        <div class="lesson-title">Streak Repair</div>
+                        <div class="lesson-desc">Save your progress! Fixes a broken streak so you don't lose your multiplier.</div>
+                        <div class="shop-footer">
+                            <div class="item-price">
+                                <i class="fas fa-gem"></i> 500
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('streak_repair')">Buy Now</button>
+                        </div>
+                    </div>
                 </div>
             </section>
             

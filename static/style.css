@@ -1150,3 +1150,198 @@ input:checked + .premium-slider:before {
 #practice-camera-container video {
     transition: opacity 0.5s ease;
 }
+/* Shop Specific Styles */
+.shop-card {
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    height: auto;
+    min-height: 400px;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9ff 100%);
+}
+
+.shop-item-icon {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 30px;
+    background: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.shop-card:hover .shop-item-icon {
+    transform: scale(1.1) rotate(3deg);
+}
+
+.shop-item-icon img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+}
+
+.shop-footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.item-price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.item-price i {
+    color: var(--accent-blue);
+    font-size: 0.9em;
+}
+
+.buy-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.buy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.buy-btn:active {
+    transform: translateY(0);
+}
+
+.buy-btn:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Shop item specific accents on hover */
+.shop-card[data-item='heart_refill']:hover { border-color: var(--accent-red); }
+.shop-card[data-item='timer_freeze']:hover { border-color: var(--accent-blue); }
+.shop-card[data-item='shield']:hover { border-color: var(--accent-yellow); }
+.shop-card[data-item='xp_card']:hover { border-color: #B794F4; }
+.shop-card[data-item='streak_repair']:hover { border-color: var(--accent-green); }
+
+/* Boost Indicators */
+.boost-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 800;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid #eee;
+    animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Inventory Cards */
+.inventory-card {
+    background: white;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+    animation: slideInUp 0.5s ease-out;
+}
+
+.inventory-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--accent-blue);
+}
+
+.inventory-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.inventory-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-name {
+    font-weight: 800;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.inventory-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Power Up Button Styling */
+.power-up-btn {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white !important;
+    padding: 8px 20px !important;
+    border-radius: 25px !important;
+    font-weight: 800 !important;
+    border: 2px solid white !important;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4) !important;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    font-size: 0.9rem !important;
+}
+
+.power-up-btn:hover {
+    transform: scale(1.05) translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(255, 165, 0, 0.5) !important;
+}
+
+.power-up-btn i {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

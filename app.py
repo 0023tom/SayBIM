@@ -3,7 +3,7 @@ from models import db, User, QuizResult, UserBadge
 from flask_cors import CORS
 import os
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 from werkzeug.utils import secure_filename
 import requests
@@ -11,12 +11,12 @@ from dotenv import load_dotenv
 
 load_dotenv() # Load from .env file
 app = Flask(__name__, static_folder='static', template_folder='templates')
-app.secret_key = 'super-secret-key-for-saybim' # In production, use a secure random key
+app.secret_key = os.environ.get('SECRET_KEY', 'default-key-for-dev')
 CORS(app)
 
 # Database Config
 basedir = os.path.abspath(os.path.dirname(__file__))
-# On Vercel, the root filesystem is read-only. We must use /tmp if we need SQLite temporarily, 
+# On Vercel, the root filesystem is read-only. Must use /tmp if need SQLite temporarily, 
 # although Firebase should be primary in production.
 if os.environ.get('VERCEL') == '1':
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/app.db'
@@ -29,7 +29,7 @@ db.init_app(app)
 
 # Firebase Setup
 from firebase_config import db_firestore
-# For now, we use Firestore if it is initialized, else fallback to SQL
+# Use Firestore if it is initialized, else fallback to SQL
 # This allows the app to still run while the user sets up Firebase
 USE_FIREBASE = db_firestore is not None
 
@@ -233,8 +233,8 @@ def get_user_stats():
 
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
-    # In Firebase mode, we might want to do a batch reset if performance is an issue,
-    # but for 10 users it is fine to do it lazily.
+    # In Firebase mode, do a batch reset if performance is an issue,
+    # but for 10 users only?
     
     # Top 10 by weekly_xp
     raw_users = DataManager.get_all_users_sorted_by_weekly_xp()
@@ -265,13 +265,27 @@ def submit_quiz_result():
     
     check_and_reset_weekly_xp(user)
     
+    xp_gain = 0
     if is_correct:
-        user.xp = (user.xp or 0) + 10 # 10 XP per correct answer
-        user.weekly_xp = (user.weekly_xp or 0) + 10
+        xp_gain = 10
+        # Check for 2x XP boost
+        if user.xp_boost_expiry:
+            expiry = user.xp_boost_expiry
+            if isinstance(expiry, str): expiry = datetime.fromisoformat(expiry)
+            if expiry.tzinfo: expiry = expiry.replace(tzinfo=None)
+            if expiry > datetime.utcnow():
+                xp_gain *= 2
+
+        user.xp = (user.xp or 0) + xp_gain
+        user.weekly_xp = (user.weekly_xp or 0) + xp_gain
     else:
-        if (user.hearts or 0) >= 5:
-            user.last_heart_update = datetime.utcnow()
-        user.hearts = max(0, (user.hearts or 0) - 1)
+        # Check for Shield (Second Chance)
+        if (user.shield_count or 0) > 0:
+            user.shield_count -= 1
+        else:
+            if (user.hearts or 0) >= 5:
+                user.last_heart_update = datetime.utcnow()
+            user.hearts = max(0, (user.hearts or 0) - 1)
     
     # Check level up (Scaling: +50 per level)
     new_level = calculate_level(user.xp or 0)
@@ -282,32 +296,95 @@ def submit_quiz_result():
     user.commit()
     new_badges = check_badges(user)
     
+    message = f'Correct! +{xp_gain} XP' if is_correct else 'Not quite! Try again.'
+    
     return jsonify({
         **user.to_dict(),
+        'message': message,
+        'xp_gain': xp_gain,
         'new_badges': new_badges
-    }) # Return updated stats
+    })
+ # Return updated stats
 
 @app.route('/api/user/refill_hearts', methods=['POST'])
 def refill_hearts():
     user = get_current_user()
     if not user: return jsonify({'error': 'Unauthorized'}), 401
-    if (user.diamonds or 0) >= 100:
-        user.diamonds = (user.diamonds or 0) - 100
+    if (user.diamonds or 0) >= 150:
+        user.diamonds = (user.diamonds or 0) - 150
         user.hearts = 5
         user.last_heart_update = None
         user.commit()
         return jsonify({'success': True, 'user': user.to_dict()})
     return jsonify({'success': False, 'message': 'Not enough diamonds'}), 400
 
-@app.route('/api/user/buy_time', methods=['POST'])
-def buy_time():
+@app.route('/api/shop/purchase', methods=['POST'])
+def purchase_item():
     user = get_current_user()
-    if not user: return jsonify({'error': 'Unauthorized'}), 401
-    if (user.diamonds or 0) >= 100:
-        user.diamonds = (user.diamonds or 0) - 100
+    if not user: return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    data = request.json
+    item_id = data.get('item_id')
+    
+    shop_items = {
+        'heart_refill': {'name': 'Heart Refill', 'cost': 150},
+        'timer_freeze': {'name': 'Timer Freeze', 'cost': 80},
+        'shield': {'name': 'Second Chance (Shield)', 'cost': 100},
+        'xp_card': {'name': '2x XP Card', 'cost': 300},
+        'streak_repair': {'name': 'Streak Repair', 'cost': 500}
+    }
+    
+    if item_id not in shop_items:
+        return jsonify({'success': False, 'message': 'Invalid item'}), 400
+        
+    item = shop_items[item_id]
+    if (user.diamonds or 0) < item['cost']:
+        return jsonify({'success': False, 'message': 'Not enough diamonds'}), 400
+        
+    user.diamonds -= item['cost']
+    
+    if item_id == 'heart_refill':
+        user.hearts = 5
+        user.last_heart_update = None
+    elif item_id == 'timer_freeze':
+        user.timer_freeze_count = (user.timer_freeze_count or 0) + 1
+    elif item_id == 'shield':
+        user.shield_count = (user.shield_count or 0) + 1
+    elif item_id == 'xp_card':
+        now = datetime.utcnow()
+        current_expiry = user.xp_boost_expiry
+        if current_expiry:
+            if isinstance(current_expiry, str): current_expiry = datetime.fromisoformat(current_expiry)
+            if current_expiry.tzinfo: current_expiry = current_expiry.replace(tzinfo=None)
+            base = max(now, current_expiry)
+        else:
+            base = now
+        user.xp_boost_expiry = base + timedelta(minutes=30)
+    elif item_id == 'streak_repair':
+        # Logic: If streak was lost (0), restore it to 1 and set last_streak_date to yesterday
+        # Or even better: if they missed a day, just set last_streak_date to yesterday
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        yesterday = today - timedelta(days=1)
+        if user.streak == 0:
+            user.streak = 1 # Give them a fresh start at 1 if they were at 0
+        user.last_streak_date = yesterday
+        
+    user.commit()
+    return jsonify({
+        'success': True, 
+        'message': f'Purchased {item["name"]}!', 
+        'user': user.to_dict()
+    })
+
+@app.route('/api/shop/use_timer_freeze', methods=['POST'])
+def use_timer_freeze():
+    user = get_current_user()
+    if not user: return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    if (user.timer_freeze_count or 0) > 0:
+        user.timer_freeze_count -= 1
         user.commit()
-        return jsonify({'success': True, 'user': user.to_dict()})
-    return jsonify({'success': False, 'message': 'Not enough diamonds'}), 400
+        return jsonify({'success': True, 'message': 'Timer Freeze activated!'})
+    return jsonify({'success': False, 'message': 'No Timer Freezes available'}), 400
 
 @app.route('/api/practice/complete', methods=['POST'])
 def complete_practice():
@@ -317,8 +394,18 @@ def complete_practice():
     
     # Award for practice
     check_and_reset_weekly_xp(user)
-    user.xp = (user.xp or 0) + 10
-    user.weekly_xp = (user.weekly_xp or 0) + 10
+    xp_reward = 10
+    
+    # Check for 2x XP boost
+    if user.xp_boost_expiry:
+        expiry = user.xp_boost_expiry
+        if isinstance(expiry, str): expiry = datetime.fromisoformat(expiry)
+        if expiry.tzinfo: expiry = expiry.replace(tzinfo=None)
+        if expiry > datetime.utcnow():
+            xp_reward *= 2
+            
+    user.xp = (user.xp or 0) + xp_reward
+    user.weekly_xp = (user.weekly_xp or 0) + xp_reward
     
     # Check level up
     new_level = calculate_level(user.xp or 0)
@@ -327,7 +414,7 @@ def complete_practice():
         user.diamonds = (user.diamonds or 0) + 100
     
     user.commit()
-    return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}! +10 XP'})
+    return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}! +{xp_reward} XP'})
 
 @app.route('/api/lesson/complete', methods=['POST'])
 def complete_lesson():
@@ -343,19 +430,28 @@ def complete_lesson():
 
     if fully_completed:
         is_mastery = (topic_id == '1' and lesson_id == 8) or (topic_id == '2' and lesson_id == 9)
-        
         if is_mastery:
             xp_reward = 200
             diamond_reward = 100
-            message = f"Topic {topic_id} Complete! +200 XP, +100 Diamonds"
+            base_msg = f"Topic {topic_id} Complete!"
         else:
             xp_reward = 50
             diamond_reward = 25
-            message = "Lesson Completed! +50 XP, +25 Diamonds"
+            base_msg = "Lesson Completed!"
+
+        # Check for 2x XP boost
+        if user.xp_boost_expiry:
+            expiry = user.xp_boost_expiry
+            if isinstance(expiry, str): expiry = datetime.fromisoformat(expiry)
+            if expiry.tzinfo: expiry = expiry.replace(tzinfo=None)
+            if expiry > datetime.utcnow():
+                xp_reward *= 2
 
         user.xp = (user.xp or 0) + xp_reward
         user.weekly_xp = (user.weekly_xp or 0) + xp_reward
         user.diamonds = (user.diamonds or 0) + diamond_reward
+        
+        message = f"{base_msg} +{xp_reward} XP, +{diamond_reward} Diamonds"
         
         # Update topic progress
         try:
@@ -367,12 +463,6 @@ def complete_lesson():
         if lesson_id >= current_highest:
             progress_dict[topic_id] = lesson_id + 1
             user.topic_progress = json.dumps(progress_dict)
-            
-    else:
-        xp_reward = 50
-        user.xp = (user.xp or 0) + xp_reward
-        user.weekly_xp = (user.weekly_xp or 0) + xp_reward
-        message = f"Lesson Completed! +{xp_reward} XP bonus"
     
     new_level = calculate_level(user.xp or 0)
     if new_level > (user.level or 1):
