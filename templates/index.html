@@ -29,7 +29,10 @@
                 {% endif %}
             </div>
             <div class="user-info">
-                <div style="font-weight: bold;" id="user-name-display">{{ user.username if user else 'User' }}</div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="font-weight: bold;" id="user-name-display">{{ user.username if user else 'User' }}</div>
+                    <div id="sidebar-badge-icon" class="badge-icon-sidebar" style="display: none;"></div>
+                </div>
                 <div style="font-size: 0.8em; color: var(--text-secondary);" id="user-level-display">Level {{ user.level
                     if user else '1' }}</div>
                 
@@ -69,6 +72,12 @@
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
                     Practice
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon"><i class="fas fa-medal"></i></span>
+                    Badges
                 </a>
             </li>
             <li class="nav-item">
@@ -203,6 +212,15 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- Badges Section -->
+            <section id="badges-section" style="display: none;">
+                <h2 class="section-title">Medal Collection</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 30px;">Earn badges by completing milestones and dominating the leaderboard. Equip one to show it off!</p>
+                <div class="badge-grid" id="badges-gallery">
+                    <!-- Populated by script.js -->
+                </div>
+            </section>
 
 
 
@@ -252,7 +270,7 @@
                     <!-- Heart Refill -->
                     <div class="lesson-card shop-card" data-item="heart_refill">
                         <div class="shop-item-icon">
-                            <img src="/static/images/shop/heart_refill.png" alt="Heart Refill">
+                            <i class="fas fa-heart"></i>
                         </div>
                         <div class="lesson-title">Heart Refill</div>
                         <div class="lesson-desc">Instant recovery! Refills your heart meter to 5/5 so you can keep learning.</div>
@@ -267,7 +285,7 @@
                     <!-- Timer Freeze -->
                     <div class="lesson-card shop-card" data-item="timer_freeze">
                         <div class="shop-item-icon">
-                            <img src="/static/images/shop/timer_freeze.png" alt="Timer Freeze">
+                            <i class="fas fa-snowflake"></i>
                         </div>
                         <div class="lesson-title">Timer Freeze</div>
                         <div class="lesson-desc">Pausable time! Stops the clock for 20 seconds during any mastery quiz.</div>
@@ -282,7 +300,7 @@
                     <!-- Second Chance -->
                     <div class="lesson-card shop-card" data-item="shield">
                         <div class="shop-item-icon">
-                            <img src="/static/images/shop/shield.png" alt="Shield">
+                            <i class="fas fa-shield-alt"></i>
                         </div>
                         <div class="lesson-title">Second Chance</div>
                         <div class="lesson-desc">Protective barrier! Automatically prevents heart loss on your next wrong answer.</div>
@@ -297,7 +315,7 @@
                     <!-- 2x XP Card -->
                     <div class="lesson-card shop-card" data-item="xp_card">
                         <div class="shop-item-icon">
-                            <img src="/static/images/shop/xp_card.png" alt="2x XP Card">
+                            <i class="fas fa-rocket"></i>
                         </div>
                         <div class="lesson-title">2x XP Card</div>
                         <div class="lesson-desc">Double progress! Earn 2x Experience Points (XP) for the next 30 minutes.</div>
@@ -312,7 +330,7 @@
                     <!-- Streak Repair -->
                     <div class="lesson-card shop-card" data-item="streak_repair">
                         <div class="shop-item-icon">
-                            <img src="/static/images/shop/streak_repair.png" alt="Streak Repair">
+                            <i class="fas fa-fire-alt"></i>
                         </div>
                         <div class="lesson-title">Streak Repair</div>
                         <div class="lesson-desc">Save your progress! Fixes a broken streak so you don't lose your multiplier.</div>
@@ -466,6 +484,21 @@
                             <input type="password" name="password" class="setting-input" placeholder="Leave blank to keep current">
                         </div>
 
+                        <div class="setting-form-group">
+                            <label>Equip Badge</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="badge-select" class="setting-input" style="margin-bottom: 0;">
+                                    <option value="">No badge equipped</option>
+                                </select>
+                                <button type="button" onclick="equipSelectedBadge()" class="quiz-btn" style="border: none; background: var(--accent-blue); color: white; min-width: 110px;">
+                                    Equip
+                                </button>
+                            </div>
+                            <div id="badge-equip-status" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                                Owned badges will appear here.
+                            </div>
+                        </div>
+
                         <button type="submit" class="auth-btn" style="margin-top: 20px;">
                             Save Profile Changes
                         </button>
@@ -544,7 +577,7 @@
     <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <button class="modal-close" onclick="confirmExit(() => closeModal('feedback-modal'))">
+            <button class="modal-close" onclick="closeModal('feedback-modal')">
                 <i class="fas fa-times"></i>
             </button>
             <h3 style="margin-bottom: 20px;">We Value Your Feedback</h3>
@@ -570,6 +603,37 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+ 
+    <!-- Badge Celebration Modal -->
+    <div id="badge-celebration-modal" class="modal-overlay" style="z-index: 2000;">
+        <div class="modal-content celebration-card" style="max-width: 450px; overflow: visible;">
+            <div id="confetti-container"></div>
+            
+            <div class="badge-glow-effect"></div>
+            
+            <div id="celebration-emoji" style="font-size: 6rem; margin-bottom: 20px; position: relative; z-index: 2;">🏆</div>
+            
+            <h2 style="font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">New Badge Obtained!</h2>
+            <h3 id="celebration-badge-name" style="color: var(--accent-blue); font-weight: 800; margin-bottom: 15px;">Topic Master</h3>
+            
+            <p id="celebration-badge-desc" style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 30px;">
+                Congratulations! You've earned this special badge for your achievements.
+            </p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="quiz-btn" onclick="closeModal('badge-celebration-modal')" style="flex: 1; border: 2px solid #eee; color: var(--text-secondary);">
+                    Later
+                </button>
+                <button class="quiz-btn" id="equip-now-btn" style="flex: 1; background: var(--primary-gradient); color: white; border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                    Equip Now
+                </button>
+            </div>
+            
+            <p style="font-size: 0.8em; color: var(--text-secondary); margin-top: 20px; font-weight: 600;">
+                <i class="fas fa-info-circle"></i> View all medals in the Badge section
+            </p>
+        </div>
+    </div>
 </body>
 
 </html>

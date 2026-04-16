@@ -80,7 +80,7 @@ class UserWrapper:
             'hearts': hearts,
             'diamonds': self.data.get('diamonds', 0),
             'streak': self.data.get('streak', 0),
-            'topic_progress': self.data.get('topic_progress', '{}'),
+            'topic_progress': self.data.get('topic_progress') or ('{}' if self.is_sql else {}),
             'next_heart_in_seconds': next_heart_in_seconds,
             'shield_count': self.data.get('shield_count', 0),
             'timer_freeze_count': self.data.get('timer_freeze_count', 0),
@@ -287,6 +287,34 @@ class DataManager:
         else:
             user = User.query.get(user_id)
             return [b.badge_name for b in user.badges] if user else []
+
+    @staticmethod
+    def delete_user_badges_by_prefix(user_id, prefix):
+        if USE_FIREBASE:
+            badges_ref = db_firestore.collection('user_badges')
+            query = badges_ref.where(filter=FieldFilter('user_id', '==', str(user_id))).stream()
+            for doc in query:
+                badge_name = doc.to_dict().get('badge_name', '')
+                if badge_name.startswith(prefix):
+                    doc.reference.delete()
+        else:
+            UserBadge.query.filter(
+                UserBadge.user_id == user_id,
+                UserBadge.badge_name.like(f'{prefix}%')
+            ).delete(synchronize_session=False)
+            db.session.commit()
+
+    @staticmethod
+    def delete_user_badge_exact(user_id, badge_name):
+        if USE_FIREBASE:
+            badges_ref = db_firestore.collection('user_badges')
+            query = badges_ref.where(filter=FieldFilter('user_id', '==', str(user_id))).stream()
+            for doc in query:
+                if doc.to_dict().get('badge_name') == badge_name:
+                    doc.reference.delete()
+        else:
+            UserBadge.query.filter_by(user_id=user_id, badge_name=badge_name).delete(synchronize_session=False)
+            db.session.commit()
 
     @staticmethod
     def delete_user_account(user_id):

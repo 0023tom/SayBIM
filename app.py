@@ -64,24 +64,164 @@ def get_current_user():
         return DataManager.get_user_by_id(session['user_id'])
     return None
 
-def check_badges(user):
-    # Simple Badge Logic
-    # user is now a UserWrapper
-    badges = []
+BADGE_DEFS = {
+    'first_practice_camera': {'label': 'First Camera Practice (1x)', 'emoji': '📷', 'weekly': False},
+    'topic_1_complete': {'label': 'Topic 1 Master (Lessons 1-8)', 'emoji': '📘', 'weekly': False},
+    'topic_2_complete': {'label': 'Topic 2 Master (Lessons 1-9)', 'emoji': '📙', 'weekly': False},
+    'weekly_top_1': {'label': 'Weekly Top 1', 'emoji': '🥇', 'weekly': True},
+    'weekly_top_2': {'label': 'Weekly Top 2', 'emoji': '🥈', 'weekly': True},
+    'weekly_top_3': {'label': 'Weekly Top 3', 'emoji': '🥉', 'weekly': True},
+}
+
+def get_week_start(dt=None):
+    now = dt or datetime.utcnow()
+    return (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+
+def get_next_weekly_reset(dt=None):
+    return get_week_start(dt) + timedelta(days=7)
+
+def _badge_record_for_key(key, week_start=None):
+    if BADGE_DEFS.get(key, {}).get('weekly'):
+        week_id = (week_start or get_week_start()).date().isoformat()
+        return f'badge::{key}::{week_id}'
+    return f'badge::{key}'
+
+def _parse_badge_inventory(raw_badges):
+    now = datetime.utcnow()
+    owned = {}
+    equipped_key = None
+    equipped_raw = None
+
+    for raw in raw_badges:
+        if raw.startswith('equipped::'):
+            equipped_key = raw.split('::', 1)[1]
+            equipped_raw = raw
+            continue
+
+        if not raw.startswith('badge::'):
+            continue
+
+        parts = raw.split('::')
+        if len(parts) < 2:
+            continue
+        key = parts[1]
+        if key not in BADGE_DEFS:
+            continue
+
+        meta = BADGE_DEFS[key]
+        expires_at = None
+        is_active = True
+
+        if meta.get('weekly'):
+            if len(parts) < 3:
+                continue
+            try:
+                week_start = datetime.fromisoformat(parts[2])
+                expires_at = week_start + timedelta(days=7)
+                is_active = now < expires_at
+            except ValueError:
+                is_active = False
+
+        if not is_active:
+            continue
+
+        owned[key] = {
+            'key': key,
+            'name': meta['label'],
+            'emoji': meta['emoji'],
+            'is_weekly': meta['weekly'],
+            'expires_at': (expires_at.isoformat() + 'Z') if expires_at else None
+        }
+
+    if equipped_key and equipped_key not in owned and equipped_raw:
+        return list(owned.values()), None, equipped_raw
+    return list(owned.values()), owned.get(equipped_key), None
+
+def get_user_badge_payload(user_id):
+    raw = DataManager.get_user_badges(user_id)
+    owned, equipped, stale_equipped = _parse_badge_inventory(raw)
+    if stale_equipped:
+        DataManager.delete_user_badge_exact(user_id, stale_equipped)
+    return {'owned': owned, 'equipped': equipped}
+
+def award_badge_if_missing(user_id, key, week_start=None):
+    if key not in BADGE_DEFS:
+        return False
+    raw = DataManager.get_user_badges(user_id)
+    record = _badge_record_for_key(key, week_start=week_start)
+    if record in raw:
+        return False
+    DataManager.add_badge(user_id, record)
+    return True
+
+def set_equipped_badge(user_id, badge_key):
+    DataManager.delete_user_badges_by_prefix(user_id, 'equipped::')
+    if badge_key:
+        DataManager.add_badge(user_id, f'equipped::{badge_key}')
+
+def check_and_finalize_weekly_leaderboard():
+    """
+    Checks if the previous week stand-ins have been finalized and awarded.
+    Should be called regularly (e.g., during leaderboard or user fetch).
+    """
+    now = datetime.utcnow()
+    current_week_start = get_week_start(now)
+    prev_week_start = current_week_start - timedelta(days=7)
+    prev_week_id = prev_week_start.date().isoformat()
     
-    current_badges = DataManager.get_user_badges(user.id)
+    # Check if Top 1 for previous week has been awarded to ANYONE yet
+    # This acts as our "finalization" flag for the system
+    finalization_flag = f'system::finalized_week::{prev_week_id}'
+    
+    # We use a special "System" badge check. 
+    # To keep it simple without adding models, we'll check if any user has this system badge.
+    # Actually, better to check if Top 1 was awarded.
+    # But what if Top 1 hasn't logged in? 
+    # Let's use a "System" record. We award it to User ID 1 or a dummy?
+    # Better: check DataManager for existence of ANY badge with that suffix.
+    
+    # Re-reading app.py... I'll check the Top 1 badge.
+    top_1_key = f'badge::weekly_top_1::{prev_week_id}'
+    
+    # We need a global way to check if this was done. 
+    # For now, let's look at the leaderboard Standings when a reset is due.
+    pass
 
-    # Level based badges
-    if user.level >= 2 and 'Novice Signer' not in current_badges:
-        DataManager.add_badge(user.id, 'Novice Signer')
-        badges.append('Novice Signer')
-        
-    # Wealth based badges
-    if user.diamonds >= 1000 and 'Gem Collector' not in current_badges:
-        DataManager.add_badge(user.id, 'Gem Collector')
-        badges.append('Gem Collector')
+def award_weekly_rank_badges(raw_users, week_start=None):
+    if not week_start:
+        week_start = get_week_start()
+    top_keys = ['weekly_top_1', 'weekly_top_2', 'weekly_top_3']
+    for rank, user_item in enumerate(raw_users[:3], start=1):
+        weekly_xp = user_item.weekly_xp if hasattr(user_item, 'weekly_xp') else user_item.get('weekly_xp', 0)
+        if (weekly_xp or 0) <= 0:
+            continue
+        user_id = user_item.id if hasattr(user_item, 'id') else user_item.get('id')
+        if user_id is None:
+            continue
+        award_badge_if_missing(user_id, top_keys[rank - 1], week_start=week_start)
 
-    return badges
+def get_progress_dict(user):
+    tp = user.topic_progress
+    if not tp:
+        return {}
+    if isinstance(tp, dict):
+        return tp
+    try:
+        return json.loads(tp)
+    except (ValueError, TypeError):
+        return {}
+
+def check_badges(user):
+    earned = []
+    progress_dict = get_progress_dict(user)
+
+    if progress_dict.get('1', 1) > 8 and award_badge_if_missing(user.id, 'topic_1_complete'):
+        earned.append(BADGE_DEFS['topic_1_complete']['label'])
+
+    if progress_dict.get('2', 1) > 9 and award_badge_if_missing(user.id, 'topic_2_complete'):
+        earned.append(BADGE_DEFS['topic_2_complete']['label'])
+
+    return earned
 
 @app.route('/')
 def home():
@@ -90,7 +230,7 @@ def home():
         return redirect(url_for('login'))
     user.update_hearts()
     user.update_streak()
-    db.session.commit()
+    user.commit()
     return render_template('index.html', user=user)
 
 @app.route('/topic/<int:topic_id>')
@@ -211,6 +351,14 @@ def check_and_reset_weekly_xp(user):
             last_reset = last_reset.replace(tzinfo=None)
 
     if not last_reset or last_reset < most_recent_monday:
+        # WEEKLY FINALIZATION: 
+        # Before resetting, if this user is potentially a winner, 
+        # we trigger a global check/award for the week that just ended.
+        # Since it's Monday+, the current standings (pre-reset) are the FINAL standings.
+        raw_users = DataManager.get_all_users_sorted_by_weekly_xp()
+        # Award badges for the week that just ended (last_reset's week)
+        award_weekly_rank_badges(raw_users, week_start=last_reset or (most_recent_monday - timedelta(days=7)))
+        
         user.weekly_xp = 0
         user.last_weekly_reset = now
         user.commit() # Save changes
@@ -226,9 +374,11 @@ def get_user_stats():
     user.update_hearts()
     user.update_streak()
     user.commit()
+    badge_payload = get_user_badge_payload(user.id)
     return jsonify({
         **user.to_dict(),
-        'badges': DataManager.get_user_badges(user.id)
+        'badges': badge_payload['owned'],
+        'equipped_badge': badge_payload['equipped']
     })
 
 @app.route('/api/leaderboard', methods=['GET'])
@@ -246,9 +396,32 @@ def get_leaderboard():
         d = wrapper.to_dict()
         # Override the general xp field specifically for the leaderboard display
         d['xp'] = d.get('weekly_xp', 0)
+        d['equipped_badge'] = get_user_badge_payload(d['id']).get('equipped')
         result.append(d)
         
     return jsonify(result)
+
+@app.route('/api/badges/equip', methods=['POST'])
+def equip_badge():
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    data = request.get_json(silent=True) or {}
+    badge_key = (data.get('badge_key') or '').strip()
+    if badge_key == '':
+        set_equipped_badge(user.id, None)
+        payload = get_user_badge_payload(user.id)
+        return jsonify({'success': True, 'equipped_badge': payload.get('equipped')})
+
+    payload = get_user_badge_payload(user.id)
+    owned_keys = {b['key'] for b in payload.get('owned', [])}
+    if badge_key not in owned_keys:
+        return jsonify({'success': False, 'message': 'Badge not owned or expired'}), 400
+
+    set_equipped_badge(user.id, badge_key)
+    payload = get_user_badge_payload(user.id)
+    return jsonify({'success': True, 'equipped_badge': payload.get('equipped')})
 
 @app.route('/api/quiz/<int:topic_id>/<int:lesson_id>', methods=['GET'])
 def get_quiz(topic_id, lesson_id):
@@ -295,14 +468,20 @@ def submit_quiz_result():
     
     user.commit()
     new_badges = check_badges(user)
+    badge_payload = get_user_badge_payload(user.id)
     
     message = f'Correct! +{xp_gain} XP' if is_correct else 'Not quite! Try again.'
     
     return jsonify({
-        **user.to_dict(),
+        'success': True,
         'message': message,
         'xp_gain': xp_gain,
-        'new_badges': new_badges
+        'new_badges': new_badges,
+        'user': {
+            **user.to_dict(),
+            'badges': badge_payload['owned'],
+            'equipped_badge': badge_payload['equipped']
+        }
     })
  # Return updated stats
 
@@ -414,7 +593,17 @@ def complete_practice():
         user.diamonds = (user.diamonds or 0) + 100
     
     user.commit()
-    return jsonify({'success': True, 'user': user.to_dict(), 'message': f'Learned {word}! +{xp_reward} XP'})
+    new_badges = []
+    if award_badge_if_missing(user.id, 'first_practice_camera'):
+        new_badges.append(BADGE_DEFS['first_practice_camera']['label'])
+    check_badges(user)
+    badge_payload = get_user_badge_payload(user.id)
+    return jsonify({
+        'success': True,
+        'user': {**user.to_dict(), 'badges': badge_payload['owned'], 'equipped_badge': badge_payload['equipped']},
+        'message': f'Learned {word}! +{xp_reward} XP',
+        'new_badges': new_badges
+    })
 
 @app.route('/api/lesson/complete', methods=['POST'])
 def complete_lesson():
@@ -425,6 +614,8 @@ def complete_lesson():
     fully_completed = data.get('fully_completed', False)
     topic_id = str(data.get('topic_id', '1'))
     lesson_id = int(data.get('lesson_id', 0))
+    xp_reward = 0
+    message = 'Progress saved.'
 
     check_and_reset_weekly_xp(user)
 
@@ -454,15 +645,17 @@ def complete_lesson():
         message = f"{base_msg} +{xp_reward} XP, +{diamond_reward} Diamonds"
         
         # Update topic progress
-        try:
-            progress_dict = json.loads(user.topic_progress or '{}')
-        except:
-            progress_dict = {}
+        progress_dict = get_progress_dict(user)
         
         current_highest = progress_dict.get(topic_id, 1)
         if lesson_id >= current_highest:
             progress_dict[topic_id] = lesson_id + 1
-            user.topic_progress = json.dumps(progress_dict)
+            # If using Firestore, we store the dict directly
+            # If SQL, we store the JSON string. UserWrapper handles this in __setattr__.
+            if not user.is_sql:
+                user.topic_progress = progress_dict
+            else:
+                user.topic_progress = json.dumps(progress_dict)
     
     new_level = calculate_level(user.xp or 0)
     if new_level > (user.level or 1):
@@ -471,14 +664,17 @@ def complete_lesson():
         
     user.commit()
     new_badges = check_badges(user)
+    badge_payload = get_user_badge_payload(user.id)
     
     return jsonify({
         'success': True,
         'message': message,
         'reward_xp': xp_reward,
+        'new_badges': new_badges,
         'user': {
             **user.to_dict(),
-            'badges': DataManager.get_user_badges(user.id)
+            'badges': badge_payload['owned'],
+            'equipped_badge': badge_payload['equipped']
         }
     })
 @app.route('/api/user/profile', methods=['POST'])

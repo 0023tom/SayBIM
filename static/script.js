@@ -1,6 +1,3 @@
-
-// ... (Previous Game State code remains the same until Camera Logic) ...
-
 // Game State
 let gameState = {
     hearts: 5,
@@ -14,8 +11,13 @@ let gameState = {
     username: '',
     detectionPaused: true, 
     targetLetter: null,    
-    sessionXp: 0           // Track XP gained in current session
+    sessionXp: 0,          // Track XP gained in current session
+    badges: [],
+    equippedBadge: null
 };
+
+// Lesson Steps Progress (0-5 steps per lesson)
+let userProgress = {};
 
 let quizTimerInterval = null;
 let currentRemainingTime = 180;
@@ -230,8 +232,8 @@ let practiceSession = {
 };
 
 const practiceConfig = {
-    alphabets: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'],
-    // Disable others for now as model only supports A-L
+    alphabets: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+    // Disable others for now as models only support Alphabets
     numbers: [],
     objects: [],
     foods: [],
@@ -302,7 +304,8 @@ function switchSection(section) {
         'setting': 'Setting',
         'challenge': 'Challenge',
         'shop': 'Shop',
-        'leaderboard': 'Leaderboard'
+        'leaderboard': 'Leaderboard',
+        'badges': 'Badges'
     };
     const targetText = sectionToNavText[section];
     const links = document.querySelectorAll('.nav-link');
@@ -319,6 +322,7 @@ function switchSection(section) {
         showSection(section);
         if (section === 'leaderboard') fetchLeaderboard();
         if (section === 'setting') showSubMenu('main');
+        if (section === 'badges') renderBadgeSection();
     } else {
         // Redirect to home with section parameter
         window.location.href = `/?section=${section}`;
@@ -356,7 +360,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 'Leaderboard': 'leaderboard',
                 'Setting': 'setting',
                 'Challenge': 'challenge',
-                'Shop': 'shop'
+                'Shop': 'shop',
+                'Badges': 'badges'
             };
             if (textToSection[text]) {
                 e.preventDefault();
@@ -402,25 +407,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function updateGameState(userData) {
-    if (!userData) return;
-    gameState.hearts = userData.hearts;
-    gameState.diamonds = userData.diamonds;
-    gameState.streak = userData.streak;
-    gameState.level = userData.level;
-    gameState.xp = userData.xp;
-    gameState.nextHeartIn = userData.next_heart_in_seconds || 0;
-    gameState.username = userData.username;
-    gameState.shieldCount = userData.shield_count || 0;
-    gameState.timerFreezeCount = userData.timer_freeze_count || 0;
-    gameState.xpBoostActive = userData.xp_boost_active || false;
-    gameState.xpBoostExpiry = userData.xp_boost_expiry || null;
+function updateGameState(data) {
+    if (!data) return;
     
+    // Support both direct user object or wrap with full response
+    const userData = data.user || data;
+    const newBadges = data.new_badges || userData.new_badges;
+
+    if (userData.username) gameState.username = userData.username;
+    if (userData.xp !== undefined) gameState.xp = userData.xp;
+    if (userData.level !== undefined) gameState.level = userData.level;
+    if (userData.hearts !== undefined) gameState.hearts = userData.hearts;
+    if (userData.diamonds !== undefined) gameState.diamonds = userData.diamonds;
+    if (userData.streak !== undefined) gameState.streak = userData.streak;
+    if (userData.shield_count !== undefined) gameState.shieldCount = userData.shield_count;
+    if (userData.timer_freeze_count !== undefined) gameState.timerFreezeCount = userData.timer_freeze_count;
+    if (userData.xp_boost_active !== undefined) gameState.xpBoostActive = userData.xp_boost_active;
+    if (userData.xp_boost_expiry !== undefined) gameState.xpBoostExpiry = userData.xp_boost_expiry;
+    
+    if (userData.badges) gameState.badges = userData.badges;
+    if (userData.equipped_badge !== undefined) gameState.equippedBadge = userData.equipped_badge;
+
     if (userData.topic_progress) {
-        gameState.topicProgress = typeof userData.topic_progress === 'string' ? JSON.parse(userData.topic_progress) : userData.topic_progress;
+        try {
+            gameState.topicProgress = typeof userData.topic_progress === 'string' 
+                ? JSON.parse(userData.topic_progress) 
+                : userData.topic_progress;
+        } catch(e) { console.error("Parse progress error", e); }
     }
+
+    // Initialize/Sync userProgress (lesson steps)
+    const storedProgress = localStorage.getItem('saybim_lesson_progress_' + gameState.username);
+    if (storedProgress) {
+        try {
+            userProgress = JSON.parse(storedProgress);
+        } catch(e) { userProgress = {}; }
+    }
+
+    // UI Updates
     updateDashboardStats();
+    updateInventoryUI();
     updateShopUI();
+    renderBadgeEquipUI();
+    renderBadgeSection();
+
+    // Sidebar Badge Icon update
+    const sidebarBadge = document.getElementById('sidebar-badge-icon');
+    if (sidebarBadge) {
+        if (gameState.equippedBadge) {
+            sidebarBadge.innerText = gameState.equippedBadge.emoji || '🏅';
+            sidebarBadge.style.display = 'flex';
+        } else {
+            sidebarBadge.style.display = 'none';
+        }
+    }
+
+    // Badge celebration check
+    if (newBadges && Array.isArray(newBadges)) {
+        newBadges.forEach(badgeName => {
+            const badge = BADGE_DEFS.find(b => b.name === badgeName || b.key === badgeName);
+            if (badge) showBadgeCelebration(badge.key);
+        });
+    }
 }
 
 async function initGame() {
@@ -475,6 +523,8 @@ function showSection(section) {
     if (settingSec) settingSec.style.display = (section === 'setting') ? 'block' : 'none';
     if (challengeSec) challengeSec.style.display = (section === 'challenge') ? 'block' : 'none';
     if (shopSec) shopSec.style.display = (section === 'shop') ? 'block' : 'none';
+    const badgeSec = document.getElementById('badges-section');
+    if (badgeSec) badgeSec.style.display = (section === 'badges') ? 'block' : 'none';
 }
 
 function fetchLeaderboard() {
@@ -496,6 +546,7 @@ function fetchLeaderboard() {
                         <div>
                             ${user.username}
                             ${user.username === gameState.username ? '<span style="font-size:0.8em; color:var(--accent-blue)">(You)</span>' : ''}
+                            ${user.equipped_badge ? `<span style="margin-left:8px; font-size:0.75em; background:#edf2ff; color:#3f51b5; border-radius:999px; padding:2px 8px; font-weight:700; white-space:nowrap;">${formatBadgeLabel(user.equipped_badge)}</span>` : ''}
                         </div>
                     </td>
                     <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">${user.level}</td>
@@ -504,6 +555,23 @@ function fetchLeaderboard() {
                 tbody.appendChild(tr);
             });
         });
+}
+
+function formatBadgeLabel(badge) {
+    if (!badge) return '';
+    return `${badge.emoji || ''} ${badge.name || ''}`.trim();
+}
+
+function formatBadgeExpiry(expiresAtIso) {
+    if (!expiresAtIso) return '';
+    const expiry = new Date(expiresAtIso);
+    const now = new Date();
+    const diff = expiry - now;
+    if (diff <= 0) return 'expired';
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    return `${days}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
 }
 
 function startLeaderboardTimer() {
@@ -551,7 +619,7 @@ function renderPracticeButtons(type) {
 
     container.innerHTML = '';
     const items = type === 'alphabets'
-        ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+        ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
     items.forEach(item => {
@@ -612,7 +680,7 @@ function startSinglePractice(category, target) {
     const refImg = document.getElementById('reference-sign-img');
     if (refContainer && refImg) {
         refContainer.style.display = 'block';
-        refImg.src = `/static/quiz_media/lesson2/${target}.jpg`;
+        refImg.src = `/static/quiz_media/lesson2/${target.toLowerCase()}.jpg`;
         refImg.onerror = () => { refContainer.style.display = 'none'; }; // Hide if image missing
     }
 }
@@ -669,9 +737,24 @@ function startPractice(category) {
 }
 
 function updatePracticeUI() {
-    const currentItem = practiceSession.items[practiceSession.currentIndex];
-    const total = practiceSession.items.length;
-    const progressPercent = ((practiceSession.currentIndex + 1) / total) * 100;
+    // Determine the current item and progress info
+    let currentItem = "";
+    let total = 0;
+    let currentIndexText = "";
+    let progressPercent = 0;
+
+    if (practiceSession && practiceSession.active && practiceSession.items && practiceSession.items.length > 0) {
+        currentItem = practiceSession.items[practiceSession.currentIndex] || "";
+        total = practiceSession.items.length;
+        currentIndexText = `${practiceSession.currentIndex + 1}/${total}`;
+        progressPercent = ((practiceSession.currentIndex + 1) / total) * 100;
+    } else {
+        // Fallback for Single Letter Practice (Standalone Page buttons)
+        currentItem = gameState.targetLetter ? gameState.targetLetter.toUpperCase() : "";
+        total = 1;
+        currentIndexText = "1/1";
+        progressPercent = 100;
+    }
 
     // Handle Dashboard Modal UI
     const prompt = document.getElementById('camera-prompt');
@@ -681,7 +764,7 @@ function updatePracticeUI() {
             Please sign: <span style="font-size: 1.5em; color: var(--accent-blue); display:block; margin: 10px 0;">
             ${currentItem}
             </span>
-            <small>Using <em>A_to_L_model_best.h5</em> (Real Time)</small>
+            <small>Using <em>${currentModelName || 'Loading...'}</em> (Real Time)</small>
         `;
     }
 
@@ -690,16 +773,26 @@ function updatePracticeUI() {
     const progressTextEl = document.getElementById('practice-progress-text');
     const progressBarEl = document.getElementById('practice-session-bar');
     if (targetWordEl) targetWordEl.innerText = currentItem;
-    if (progressTextEl) progressTextEl.innerText = `${practiceSession.currentIndex + 1}/${total}`;
-    if (progressBarEl) progressBarEl.style.width = `${progressPercent}%`;
+    if (progressTextEl && practiceSession.active) {
+        progressTextEl.innerText = currentIndexText;
+    } else if (progressTextEl) {
+        progressTextEl.innerText = ""; // Hide progress text for single practice
+    }
+    if (progressBarEl && practiceSession.active) {
+        progressBarEl.style.width = `${progressPercent}%`;
+    } else if (progressBarEl) {
+        progressBarEl.style.width = "0%"; // Keep bar empty or hide it
+    }
 
     // Update Reference Image for Randomized Sessions
     const refContainer = document.getElementById('reference-sign-container');
     const refImg = document.getElementById('reference-sign-img');
-    if (refContainer && refImg) {
+    if (refContainer && refImg && currentItem) {
         refContainer.style.display = 'block';
-        refImg.src = `/static/quiz_media/lesson2/${currentItem}.jpg`;
+        refImg.src = `/static/quiz_media/lesson2/${currentItem.toLowerCase()}.jpg`;
         refImg.onerror = () => { refContainer.style.display = 'none'; };
+    } else if (refContainer) {
+        refContainer.style.display = 'none';
     }
 
     // Sync target letter for AI detection
@@ -904,10 +997,8 @@ function updateDashboardStats() {
             xpText.innerText = `${Math.floor(progressInLevel)} / ${Math.floor(xpForNextGoal)} XP to level up`;
         }
     }
-
-    // Header items update
-    updateInventoryUI();
 }
+
 
 function updateInventoryUI() {
     const headerContainer = document.getElementById('header-active-items');
@@ -1377,8 +1468,206 @@ function showSubMenu(menu) {
         if (prefBlock) prefBlock.style.display = 'block';
     } else if (menu === 'profile') {
         if (profBlock) profBlock.style.display = 'block';
+        renderBadgeEquipUI();
     } else {
         document.getElementById('settings-main-menu').style.display = 'block';
+    }
+}
+
+function renderBadgeEquipUI() {
+    const badgeSelect = document.getElementById('badge-select');
+    const status = document.getElementById('badge-equip-status');
+    if (!badgeSelect || !status) return;
+
+    const badges = Array.isArray(gameState.badges) ? gameState.badges : [];
+    const equipped = gameState.equippedBadge;
+
+    badgeSelect.innerHTML = '<option value="">No badge equipped</option>';
+    badges.forEach((badge) => {
+        const option = document.createElement('option');
+        option.value = badge.key;
+        let label = formatBadgeLabel(badge);
+        if (badge.is_weekly && badge.expires_at) {
+            label += ` (expires in ${formatBadgeExpiry(badge.expires_at)})`;
+        }
+        option.innerText = label;
+        if (equipped && equipped.key === badge.key) {
+            option.selected = true;
+        }
+        badgeSelect.appendChild(option);
+    });
+
+    if (!badges.length) {
+        status.innerText = 'No badges unlocked yet.';
+    } else if (equipped) {
+        const expiryText = equipped.is_weekly && equipped.expires_at
+            ? ` (expires in ${formatBadgeExpiry(equipped.expires_at)})`
+            : '';
+        status.innerText = `Currently equipped: ${formatBadgeLabel(equipped)}${expiryText}`;
+    } else {
+        status.innerText = 'Choose one of your unlocked badges and press Equip.';
+    }
+}
+
+function equipSelectedBadge() {
+    const badgeSelect = document.getElementById('badge-select');
+    if (!badgeSelect) return;
+
+    fetch('/api/badges/equip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ badge_key: badgeSelect.value || '' })
+    })
+        .then(res => res.json())
+        .then(async (data) => {
+            if (!data.success) {
+                showFloatMessage(data.message || 'Failed to equip badge', 'danger');
+                return;
+            }
+
+            const userRes = await fetch('/api/user');
+            const userData = await userRes.json();
+            updateGameState(userData);
+            renderBadgeEquipUI();
+            showFloatMessage('Badge updated successfully.', 'success');
+            fetchLeaderboard();
+        })
+        .catch((err) => {
+            showFloatMessage('Failed to equip badge: ' + err.message, 'danger');
+        });
+}
+
+const BADGE_DEFS = [
+    { key: 'first_practice_camera', name: 'First Camera Practice (1x)', emoji: '📷', description: 'Complete your first practice using the camera.', weekly: false },
+    { key: 'topic_1_complete', name: 'Topic 1 Master (Lessons 1-8)', emoji: '📘', description: 'Complete all lessons in Topic 1 (Greetings).', weekly: false },
+    { key: 'topic_2_complete', name: 'Topic 2 Master (Lessons 1-9)', emoji: '📙', description: 'Complete all lessons in Topic 2 (Self-Identity).', weekly: false },
+    { key: 'weekly_top_1', name: 'Weekly Top 1', emoji: '🥇', description: 'Reach Rank 1 on the weekly leaderboard.', weekly: true },
+    { key: 'weekly_top_2', name: 'Weekly Top 2', emoji: '🥈', description: 'Reach Rank 2 on the weekly leaderboard.', weekly: true },
+    { key: 'weekly_top_3', name: 'Weekly Top 3', emoji: '🥉', description: 'Reach Rank 3 on the weekly leaderboard.', weekly: true }
+];
+
+function showBadgeCelebration(badgeKey) {
+    const badge = BADGE_DEFS.find(b => b.key === badgeKey);
+    if (!badge) return;
+
+    const modal = document.getElementById('badge-celebration-modal');
+    const emojiEl = document.getElementById('celebration-emoji');
+    const nameEl = document.getElementById('celebration-badge-name');
+    const descEl = document.getElementById('celebration-badge-desc');
+    const equipBtn = document.getElementById('equip-now-btn');
+
+    if (!modal || !emojiEl || !nameEl || !descEl || !equipBtn) return;
+
+    emojiEl.innerText = badge.emoji;
+    nameEl.innerText = badge.name;
+    descEl.innerText = badge.description;
+
+    equipBtn.onclick = () => {
+        equipBadgeByKey(badge.key);
+        closeModal('badge-celebration-modal');
+    };
+
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    createConfetti();
+    
+    // Play sound if possible
+    playSound('correct');
+}
+
+function createConfetti() {
+    const container = document.getElementById('confetti-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const colors = ['#667eea', '#764ba2', '#ff9a9e', '#fecfef', '#F6E05E', '#68D391'];
+    
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty('--fall-duration', (Math.random() * 3 + 2) + 's');
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        container.appendChild(piece);
+    }
+}
+
+function renderBadgeSection() {
+    const gallery = document.getElementById('badges-gallery');
+    if (!gallery) return;
+
+    gallery.innerHTML = '';
+    
+    // Use global BADGE_DEFS
+    const allBadges = BADGE_DEFS;
+
+    const ownedBadges = Array.isArray(gameState.badges) ? gameState.badges : [];
+    const equipped = gameState.equippedBadge;
+
+    allBadges.forEach(badge => {
+        const userBadge = ownedBadges.find(b => b.key === badge.key);
+        const isOwned = !!userBadge;
+        const isEquipped = equipped && equipped.key === badge.key;
+
+        const card = document.createElement('div');
+        card.className = `lesson-card ${!isOwned ? 'locked' : ''}`;
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.alignItems = 'center';
+        card.style.textAlign = 'center';
+        card.style.padding = '25px';
+        card.style.minHeight = '220px';
+
+        let footerHtml = '';
+        if (isOwned) {
+            if (isEquipped) {
+                footerHtml = `<div style="margin-top:auto; color:var(--accent-green); font-weight:800; font-size:0.9em;"><i class="fas fa-check-circle"></i> Equipped</div>`;
+            } else {
+                footerHtml = `<button onclick="equipBadgeByKey('${badge.key}')" class="buy-btn" style="margin-top:auto; width:100%; border-radius:12px; padding:8px;">Equip</button>`;
+            }
+        } else {
+            footerHtml = `<div style="margin-top:auto; color:var(--text-secondary); font-size:0.85em; font-weight:700;"><i class="fas fa-lock"></i> Locked</div>`;
+        }
+
+        let expiryHtml = '';
+        if (userBadge && userBadge.is_weekly && userBadge.expires_at) {
+            expiryHtml = `<div style="font-size:0.7em; color:var(--accent-red); margin-top:5px;">Expires: ${formatBadgeExpiry(userBadge.expires_at)}</div>`;
+        }
+
+        card.innerHTML = `
+            <div style="font-size: 3.5rem; margin-bottom: 15px; filter: ${isOwned ? 'none' : 'grayscale(1) opacity(0.4)'};">${badge.emoji}</div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: ${isOwned ? 'var(--text-primary)' : 'var(--text-secondary)'};">${badge.name}</div>
+            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px; line-height: 1.4;">${badge.description}</div>
+            ${expiryHtml}
+            ${footerHtml}
+        `;
+        gallery.appendChild(card);
+    });
+}
+
+async function equipBadgeByKey(badgeKey) {
+    try {
+        const res = await fetch('/api/badges/equip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ badge_key: badgeKey })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showFloatMessage("Badge equipped successfully!", "success");
+            // Refresh user data to sync across UI
+            const userRes = await fetch('/api/user');
+            const userData = await userRes.json();
+            updateGameState(userData);
+            renderBadgeSection(); // Re-render gallery
+            fetchLeaderboard(); // Sync leaderboard if visible
+        } else {
+            showFloatMessage(data.message || "Failed to equip badge.", "danger");
+        }
+    } catch (err) {
+        showFloatMessage("Error equipping badge: " + err.message, "danger");
     }
 }
 
@@ -1456,21 +1745,60 @@ function confirmDeleteAccount() {
 // TFJS & MediaPipe Implementation
 // ==========================================
 
-let model = null;
+let loadedModels = {};
+let currentModel = null;
+let currentModelName = ""; // Added to track current model for display
+let currentActions = [];
+
+// Global MediaPipe & Prediction State
 let hands = null;
 let camera = null;
-let sequence = []; // Buffer for 30 frames
+let sequence = [];
 let isPredicting = false;
-const ACTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']; // Based on prediction.py
+const ACTIONS_AL = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+const ACTIONS_MZ = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+const ACTIONS_UV = ['U', 'V'];
 
-async function loadModel() {
+async function loadModel(target) {
+    if (!target) target = 'A';
+    target = target.toUpperCase();
+    
+    let modelPath = '';
+    let labels = [];
+    
+    if (ACTIONS_AL.includes(target)) {
+        modelPath = 'static/web_model/model.json';
+        labels = ACTIONS_AL;
+    } else if (ACTIONS_UV.includes(target)) {
+        modelPath = 'static/web_model_uv/model.json';
+        labels = ACTIONS_UV;
+    } else {
+        modelPath = 'static/web_model_mz/model.json';
+        labels = ACTIONS_MZ;
+    }
+
+    if (loadedModels[modelPath]) {
+        currentModel = loadedModels[modelPath];
+        currentActions = labels;
+        currentModelName = modelPath.split('/').slice(-2, -1)[0] || "Default";
+        return currentModel;
+    }
+
     try {
-        console.log("Loading model...");
-        // Load the converted TFJS model
-        model = await tf.loadLayersModel('static/web_model/model.json');
-        console.log("Model Loaded Successfully!");
+        console.log(`Loading model: ${modelPath} for target ${target}...`);
+        const model = await tf.loadLayersModel(modelPath);
+        loadedModels[modelPath] = model;
+        currentModel = model;
+        currentActions = labels;
+        currentModelName = modelPath.split('/').slice(-2, -1)[0] || "Default";
+        console.log(`Model ${modelPath} Loaded Successfully!`);
+        return model;
     } catch (err) {
-        console.error("Failed to load model:", err);
+        console.error(`Failed to load model ${modelPath}:`, err);
+        // Fallback to A-L if others fail (since they might not be converted yet)
+        if (modelPath !== 'static/web_model/model.json') {
+            return loadModel('A');
+        }
     }
 }
 
@@ -1491,7 +1819,7 @@ function onResults(results) {
     const isModalActive = modal && modal.classList.contains('active');
     const isPracticePage = window.CURRENT_PAGE_TYPE === 'practice';
 
-    if (sequence.length === 30 && model && (isModalActive || isPracticePage) && !gameState.detectionPaused) {
+    if (sequence.length === 30 && currentModel && (isModalActive || isPracticePage) && !gameState.detectionPaused) {
         predictGesture();
     }
 }
@@ -1531,11 +1859,11 @@ async function predictGesture() {
 
     try {
         const inputTensor = tf.tensor3d([sequence]); // Shape [1, 30, 126]
-        const prediction = model.predict(inputTensor);
+        const prediction = currentModel.predict(inputTensor);
         const values = await prediction.data();
         const maxIndex = values.indexOf(Math.max(...values));
         const confidence = values[maxIndex];
-        const predictedAction = ACTIONS[maxIndex];
+        const predictedAction = currentActions[maxIndex];
 
         inputTensor.dispose();
         prediction.dispose();
@@ -1555,7 +1883,11 @@ async function predictGesture() {
         }
 
         // Enforce target matching if a specific target is set
-        if (!gameState.detectionPaused && confidence > 0.7) {
+        // Threshold: 50% for U and V, 70% for others
+        const currentTarget = gameState.targetLetter ? gameState.targetLetter.toUpperCase() : null;
+        const requiredConfidence = (currentTarget === 'U' || currentTarget === 'V') ? 0.5 : 0.7;
+
+        if (!gameState.detectionPaused && confidence > requiredConfidence) {
             if (gameState.targetLetter) {
                 // If we have a target, only trigger success if it matches
                 if (predictedAction === gameState.targetLetter) {
@@ -1594,21 +1926,26 @@ function handleCorrectAnswer(action) {
     }
 
     playSound('correct');
-    // showFloatMessage(`Correct! That is ${action}. +10 XP`); // Removed hardcoded message
+    
+    // Provide immediate feedback for a snappier experience (message removed as per user request)
+    // showFloatMessage("Correct! Well done.", "success");
 
-    // Notify Backend
+    // Notify Backend (XP and backend rewards handled here)
     fetch('/api/practice/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: action })
     }).then(res => res.json()).then(data => {
         updateGameState(data.user || data);
-        if (data.message) {
+        if (data.message && data.message.includes('+')) {
+            // If it's a reward notification, show it as well
             showFloatMessage(data.message);
         }
     });
 
-    practiceSession.currentIndex++;
+    if (practiceSession.active) {
+        practiceSession.currentIndex++;
+    }
 
     if (practiceSession.active && practiceSession.currentIndex >= practiceSession.items.length) {
         showFloatMessage(`Session Complete!`);
@@ -1628,14 +1965,16 @@ function handleCorrectAnswer(action) {
             fetch('/api/lesson/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fully_completed: fullyCompleted })
+                body: JSON.stringify({ 
+                    fully_completed: fullyCompleted,
+                    topic_id: gameState.currentTopicId,
+                    lesson_id: gameState.currentLessonId
+                })
             })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        gameState.streak = data.user.streak;
-                        gameState.xp = data.user.xp;
-                        gameState.diamonds = data.user.diamonds;
+                        updateGameState(data);
                         
                         // Show total XP gained in the final message
                         const totalGained = gameState.sessionXp + (data.reward_xp || 0);
@@ -1702,8 +2041,19 @@ async function openCameraModal(customText) {
 
     if (customText) {
         const prompt = document.getElementById('camera-prompt');
-        if (prompt) prompt.innerText = customText;
+        if (prompt) {
+            prompt.style.display = 'block';
+            prompt.innerHTML = `
+                <div style="text-align:center;">
+                    <div style="margin-bottom: 5px; opacity: 0.9;">${customText}</div>
+                    <small style="opacity: 0.7; font-size: 0.8em;">AI Model: <em>${currentModelName || 'Loading...'}</em> (Real Time)</small>
+                </div>
+            `;
+        }
     }
+
+    // Load appropriate model for the current target
+    await loadModel(gameState.targetLetter || 'A');
 
     const videoElement = document.getElementById('webcam');
 
@@ -1751,6 +2101,7 @@ closeModal = function (modalId) {
         if (camera) camera.stop();
         sequence = []; // Reset buffer
         if (practiceSession.active) practiceSession.active = false;
+        // We keep loadedModels in cache for better performance next time
     }
 }
 
