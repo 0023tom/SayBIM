@@ -11,7 +11,7 @@ SIGN_TO_MEDIA = {
     "Khabar Baik": get_media_url("Fine.jpg"),
     "Terima Kasih": get_media_url("Thank_You.jpg"),
     "Sama-sama": get_media_url("You_Are_Welcome.jpg"),
-    "Sila": get_media_url("Please.jpg"),
+    "Sila": get_media_url("Please_Welcome.jpg"),
     "Selamat Pagi": get_media_url("Good_Morning.jpg"),
     "Selamat Tengah Hari": get_media_url("Good_Afternoon.jpg"),
     "Selamat Petang": get_media_url("Good_Evening.jpg"),
@@ -265,7 +265,7 @@ TOPIC_1_DATA = {
             "type": "Visual",
             "text": "What does this sign mean?",
             "target": "Sila",
-            "media_url": get_media_url("Please.jpg")
+            "media_url": get_media_url("Please_Welcome.jpg")
         },
         {
             "type": "Scenario",
@@ -307,7 +307,7 @@ TOPIC_1_DATA = {
         },
         {
             "type": "Scenario",
-            "text": "You are meeting a colleague for lunch at 1:00 PM. You sign:",
+            "text": "You are meeting a colleague for lunch at 12:00 PM. You sign:",
             "target": "Selamat Tengah Hari",
             "media_url": None
         },

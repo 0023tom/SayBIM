@@ -233,8 +233,8 @@ let practiceSession = {
 
 const practiceConfig = {
     alphabets: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-    // Disable others for now as models only support Alphabets
-    numbers: [],
+    // Disable others for now as models only support Alphabets & Numbers
+    numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
     objects: [],
     foods: [],
     beverages: [],
@@ -399,10 +399,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const type = urlParams.get('type') || 'alphabets';
         renderPracticeButtons(type);
 
-        // Immediate Number Notice: If numbers, show the overlay right away
+        // Immediate Number Notice: Handled by practice logic
         if (type === 'numbers') {
             const maintenanceOverlay = document.getElementById('maintenance-overlay');
-            if (maintenanceOverlay) maintenanceOverlay.style.display = 'flex';
+            if (maintenanceOverlay) maintenanceOverlay.style.display = 'none';
         }
     }
 });
@@ -466,8 +466,18 @@ function updateGameState(data) {
     if (newBadges && Array.isArray(newBadges)) {
         newBadges.forEach(badgeName => {
             const badge = BADGE_DEFS.find(b => b.name === badgeName || b.key === badgeName);
-            if (badge) showBadgeCelebration(badge.key);
+            if (badge) {
+                // If it's a quiz or practice completion, we might want to delay it
+                // For now, we always queue it to ensure sequential display
+                queueBadgeCelebration(badge.key);
+            }
         });
+        
+        // If we are NOT in a quiz/practice result flow, process immediately
+        // Otherwise, the result flow will call processBadgeQueue()
+        if (window.CURRENT_PAGE_TYPE !== 'quiz' && !practiceSession.active) {
+            processBadgeQueue();
+        }
     }
 }
 
@@ -636,19 +646,8 @@ function renderPracticeButtons(type) {
             const cameraIndicator = document.getElementById('camera-active-status');
 
             if (type === 'numbers') {
-                if (maintenanceOverlay) maintenanceOverlay.style.display = 'flex';
-                if (cameraIndicator) cameraIndicator.style.display = 'none';
-
-                // Do not open camera
-                gameState.targetLetter = null;
-                gameState.detectionPaused = true;
-
-                // If camera is running, stop it
-                if (camera) {
-                    camera.stop();
-                    const videoElement = document.getElementById('webcam');
-                    if (videoElement) videoElement.style.opacity = '0.3';
-                }
+                if (maintenanceOverlay) maintenanceOverlay.style.display = 'none';
+                startSinglePractice(type, item);
             } else {
                 if (maintenanceOverlay) maintenanceOverlay.style.display = 'none';
                 startSinglePractice(type, item);
@@ -1097,7 +1096,7 @@ function buyItem(itemId) {
     .then(data => {
         if (data.success) {
             showFloatMessage(data.message, 'success');
-            updateGameState(data.user);
+            updateGameState(data);
         } else {
             showFloatMessage(data.message, 'danger');
         }
@@ -1202,17 +1201,24 @@ function nextQuestion() {
             })
         }).then(res => res.json()).then(data => {
             if (data.success) {
-                // If it's a full user object under 'user' key (like some endpoints return)
-                // or just the user properties directly
                 const userData = data.user || data;
-                updateGameState(userData);
+                updateGameState(data);
 
                 if (window.CURRENT_PAGE_TYPE === 'quiz') {
                     showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
-                        window.location.href = '/';
+                        // Process any earned badges AFTER the toast is dismissed
+                        if (badgeCelebrationQueue.length > 0) {
+                            processBadgeQueue(() => {
+                                window.location.href = '/';
+                            });
+                        } else {
+                            window.location.href = '/';
+                        }
                     });
                 } else {
-                    showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success');
+                    showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
+                        processBadgeQueue();
+                    });
                     renderLessonCards();
                     closeModal('quiz-modal');
                     gameState.currentQuestionIndex = 0;
@@ -1245,7 +1251,7 @@ function refillHearts() {
         })
         .then(data => {
             if (data.success) {
-                updateGameState(data.user);
+                updateGameState(data);
 
                 const gameOverModal = document.getElementById('game-over-modal');
                 if (gameOverModal) {
@@ -1384,11 +1390,22 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer, xpMessage = "") 
             }
             showGameOver();
         } else {
-            nextQuestion();
-            // Only resume timer for Mastery Review lessons
-            if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
-                (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
-                startQuizTimer();
+            // Process any badges earned from the specific question (uncommon but possible)
+            if (isCorrect && badgeCelebrationQueue.length > 0) {
+                processBadgeQueue(() => {
+                    nextQuestion();
+                    if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
+                        (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+                        startQuizTimer();
+                    }
+                });
+            } else {
+                nextQuestion();
+                // Only resume timer for Mastery Review lessons
+                if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
+                    (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+                    startQuizTimer();
+                }
             }
         }
     };
@@ -1546,9 +1563,50 @@ const BADGE_DEFS = [
     { key: 'weekly_top_3', name: 'Weekly Top 3', emoji: '🥉', description: 'Reach Rank 3 on the weekly leaderboard.', weekly: true }
 ];
 
+
+let badgeCelebrationQueue = [];
+let isCelebrationModalActive = false;
+let currentCelebrationCallback = null;
+
+function queueBadgeCelebration(badgeKey) {
+    if (!badgeCelebrationQueue.includes(badgeKey)) {
+        badgeCelebrationQueue.push(badgeKey);
+    }
+}
+
+function processBadgeQueue(callback = null) {
+    if (callback) currentCelebrationCallback = callback;
+    
+    if (badgeCelebrationQueue.length === 0) {
+        if (currentCelebrationCallback) {
+            const cb = currentCelebrationCallback;
+            currentCelebrationCallback = null;
+            cb();
+        }
+        return;
+    }
+
+    if (isCelebrationModalActive) return;
+
+    const nextBadgeKey = badgeCelebrationQueue.shift();
+    showBadgeCelebration(nextBadgeKey);
+}
+
 function showBadgeCelebration(badgeKey) {
-    const badge = BADGE_DEFS.find(b => b.key === badgeKey);
-    if (!badge) return;
+    isCelebrationModalActive = true;
+    // Clean key if it's a full record string
+    let searchKey = badgeKey;
+    if (badgeKey.startsWith('badge::')) {
+        const parts = badgeKey.split('::');
+        searchKey = parts[1];
+    }
+
+    const badge = BADGE_DEFS.find(b => b.key === searchKey || b.key === badgeKey);
+    if (!badge) {
+        isCelebrationModalActive = false;
+        processBadgeQueue();
+        return;
+    }
 
     const modal = document.getElementById('badge-celebration-modal');
     const emojiEl = document.getElementById('celebration-emoji');
@@ -1556,7 +1614,11 @@ function showBadgeCelebration(badgeKey) {
     const descEl = document.getElementById('celebration-badge-desc');
     const equipBtn = document.getElementById('equip-now-btn');
 
-    if (!modal || !emojiEl || !nameEl || !descEl || !equipBtn) return;
+    if (!modal || !emojiEl || !nameEl || !descEl || !equipBtn) {
+        isCelebrationModalActive = false;
+        processBadgeQueue();
+        return;
+    }
 
     emojiEl.innerText = badge.emoji;
     nameEl.innerText = badge.name;
@@ -1566,13 +1628,26 @@ function showBadgeCelebration(badgeKey) {
         equipBadgeByKey(badge.key);
         closeModal('badge-celebration-modal');
     };
-
+    
     modal.classList.add('active');
     modal.style.display = 'flex';
     createConfetti();
-    
-    // Play sound if possible
     playSound('correct');
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        // Wait for transition
+        setTimeout(() => {
+            modal.style.display = 'none';
+            if (modalId === 'badge-celebration-modal') {
+                isCelebrationModalActive = false;
+                processBadgeQueue();
+            }
+        }, 300);
+    }
 }
 
 function createConfetti() {
@@ -1758,6 +1833,7 @@ let isPredicting = false;
 const ACTIONS_AL = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 const ACTIONS_MZ = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 const ACTIONS_UV = ['U', 'V'];
+const ACTIONS_NUM = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
 async function loadModel(target) {
     if (!target) target = 'A';
@@ -1772,6 +1848,9 @@ async function loadModel(target) {
     } else if (ACTIONS_UV.includes(target)) {
         modelPath = 'static/web_model_uv/model.json';
         labels = ACTIONS_UV;
+    } else if (ACTIONS_NUM.includes(target)) {
+        modelPath = 'static/web_model_oneten/model.json';
+        labels = ACTIONS_NUM;
     } else {
         modelPath = 'static/web_model_mz/model.json';
         labels = ACTIONS_MZ;
@@ -1936,10 +2015,13 @@ function handleCorrectAnswer(action) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: action })
     }).then(res => res.json()).then(data => {
-        updateGameState(data.user || data);
+        updateGameState(data);
         if (data.message && data.message.includes('+')) {
-            // If it's a reward notification, show it as well
-            showFloatMessage(data.message);
+            showFloatMessage(data.message, 'success', () => {
+                processBadgeQueue();
+            });
+        } else {
+            processBadgeQueue();
         }
     });
 

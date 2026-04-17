@@ -191,6 +191,7 @@ def award_weekly_rank_badges(raw_users, week_start=None):
     if not week_start:
         week_start = get_week_start()
     top_keys = ['weekly_top_1', 'weekly_top_2', 'weekly_top_3']
+    newly_earned = []
     for rank, user_item in enumerate(raw_users[:3], start=1):
         weekly_xp = user_item.weekly_xp if hasattr(user_item, 'weekly_xp') else user_item.get('weekly_xp', 0)
         if (weekly_xp or 0) <= 0:
@@ -198,7 +199,9 @@ def award_weekly_rank_badges(raw_users, week_start=None):
         user_id = user_item.id if hasattr(user_item, 'id') else user_item.get('id')
         if user_id is None:
             continue
-        award_badge_if_missing(user_id, top_keys[rank - 1], week_start=week_start)
+        if award_badge_if_missing(user_id, top_keys[rank - 1], week_start=week_start):
+            newly_earned.append(top_keys[rank - 1])
+    return newly_earned
 
 def get_progress_dict(user):
     tp = user.topic_progress
@@ -239,11 +242,9 @@ def topic_page(topic_id):
     if not user:
         return redirect(url_for('login'))
         
-    try:
-        progress_dict = json.loads(user.topic_progress or '{}')
-    except:
-        progress_dict = {}
-        
+    # Initialize progress if needed
+    progress_dict = get_progress_dict(user)
+    
     # Get highest unlocked lesson for this topic (defaults to 1)
     highest_unlocked = progress_dict.get(str(topic_id), 1)
     
@@ -350,20 +351,40 @@ def check_and_reset_weekly_xp(user):
         if last_reset.tzinfo is not None:
             last_reset = last_reset.replace(tzinfo=None)
 
+    new_badges = []
     if not last_reset or last_reset < most_recent_monday:
         # WEEKLY FINALIZATION: 
         # Before resetting, if this user is potentially a winner, 
         # we trigger a global check/award for the week that just ended.
-        # Since it's Monday+, the current standings (pre-reset) are the FINAL standings.
         raw_users = DataManager.get_all_users_sorted_by_weekly_xp()
         # Award badges for the week that just ended (last_reset's week)
-        award_weekly_rank_badges(raw_users, week_start=last_reset or (most_recent_monday - timedelta(days=7)))
+        all_newly_earned = award_weekly_rank_badges(raw_users, week_start=last_reset or (most_recent_monday - timedelta(days=7)))
         
+        # Check if OUR user was in the newly earned list
+        # Map labels to keys for consistency with what check_badges returns
+        for badge_key in all_newly_earned:
+            # We want to know if THIS user earned it.
+            # award_weekly_rank_badges awards it to the user_id in the list.
+            # We check the leaderboard again or trust award_weekly_rank_badges?
+            # Actually, award_weekly_rank_badges already did the work. 
+            # Let's check if the top user matches our user.
+            pass
+            
+        # Refined: just check which badges the user HAS now that match the prev week id.
+        prev_week_start = last_reset or (most_recent_monday - timedelta(days=7))
+        # Find which of the top 1-3 were awarded specifically to THIS user for THAT week
+        top_keys = ['weekly_top_1', 'weekly_top_2', 'weekly_top_3']
+        for bk in top_keys:
+            full_record = f'badge::{bk}::{prev_week_start.date().isoformat()}'
+            owned = DataManager.get_user_badges(user.id)
+            if full_record in owned:
+                new_badges.append(bk) # Add key for celebration
+
         user.weekly_xp = 0
         user.last_weekly_reset = now
         user.commit() # Save changes
-        return True
-    return False
+        return new_badges
+    return []
 
 # === API ROUTES ===
 
@@ -373,12 +394,17 @@ def get_user_stats():
     if not user: return jsonify({'error': 'Unauthorized'}), 401
     user.update_hearts()
     user.update_streak()
+    
+    # Check for weekly reset and badges
+    weekly_badges = check_and_reset_weekly_xp(user)
+    
     user.commit()
     badge_payload = get_user_badge_payload(user.id)
     return jsonify({
         **user.to_dict(),
         'badges': badge_payload['owned'],
-        'equipped_badge': badge_payload['equipped']
+        'equipped_badge': badge_payload['equipped'],
+        'new_badges': weekly_badges # Frontend will celebrate these!
     })
 
 @app.route('/api/leaderboard', methods=['GET'])
@@ -468,6 +494,11 @@ def submit_quiz_result():
     
     user.commit()
     new_badges = check_badges(user)
+    
+    # Also collect any weekly badges from reset
+    weekly_badges = check_and_reset_weekly_xp(user)
+    new_badges.extend(weekly_badges)
+    
     badge_payload = get_user_badge_payload(user.id)
     
     message = f'Correct! +{xp_gain} XP' if is_correct else 'Not quite! Try again.'
@@ -596,6 +627,11 @@ def complete_practice():
     new_badges = []
     if award_badge_if_missing(user.id, 'first_practice_camera'):
         new_badges.append(BADGE_DEFS['first_practice_camera']['label'])
+        
+    # Also include weekly reset badges if it's Monday!
+    weekly_badges = check_and_reset_weekly_xp(user)
+    new_badges.extend(weekly_badges)
+    
     check_badges(user)
     badge_payload = get_user_badge_payload(user.id)
     return jsonify({
@@ -664,6 +700,11 @@ def complete_lesson():
         
     user.commit()
     new_badges = check_badges(user)
+    
+    # Add weekly reset badges
+    weekly_badges = check_and_reset_weekly_xp(user)
+    new_badges.extend(weekly_badges)
+    
     badge_payload = get_user_badge_payload(user.id)
     
     return jsonify({
