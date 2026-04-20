@@ -328,6 +328,57 @@ def signup():
             
     return render_template('signup.html')
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        identifier = request.form.get('identifier')
+        
+        if not identifier:
+            flash('Please enter a username or email', 'danger')
+            return render_template('forgot_password.html')
+            
+        # Verify user exists using username or email
+        user = DataManager.get_user_by_username(identifier)
+        if not user:
+            user = DataManager.get_user_by_email(identifier)
+            
+        if user:
+            session['reset_user_id'] = user.id
+            flash('Account found. Please set your new password.', 'success')
+            return redirect(url_for('reset_password'))
+        else:
+            flash('User not found. Please check your username or email.', 'danger')
+            
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if 'reset_user_id' not in session:
+        flash('Please verify your account first.', 'danger')
+        return redirect(url_for('forgot_password'))
+        
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not new_password or not confirm_password:
+            flash('All fields are required', 'danger')
+        elif new_password != confirm_password:
+            flash('Passwords do not match', 'danger')
+        else:
+            user = DataManager.get_user_by_id(session['reset_user_id'])
+            if user:
+                user.set_password(new_password)
+                user.commit()
+                session.pop('reset_user_id', None)
+                flash('Password updated successfully! You can now login.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Error finding user, please try again.', 'danger')
+                return redirect(url_for('forgot_password'))
+                
+    return render_template('reset_password.html')
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
