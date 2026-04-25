@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1024">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SayBIM - Quiz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     
     <!-- Vercel Analytics -->
@@ -19,7 +20,7 @@
         window.CURRENT_PAGE_TYPE = 'quiz';
     </script>
 </head>
-<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--bg-light); padding: 20px;">
+<body class="quiz-page" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--bg-light); padding: 20px;">
 
     <div class="modal-content" style="position: relative; top: 0; transform: none; width: 95%; max-width: 1300px; height: 85vh; min-height: 650px; box-shadow: var(--shadow-medium); display: flex; flex-direction: column; overflow: hidden; padding: 0; border-radius: var(--radius-lg);">
         

@@ -68,7 +68,7 @@ BADGE_DEFS = {
     'first_practice_camera': {'label': 'First Camera Practice (1x)', 'emoji': '📷', 'weekly': False},
     'topic_1_complete': {'label': 'Topic 1 Master (Lessons 1-8)', 'emoji': '📘', 'weekly': False},
     'topic_2_complete': {'label': 'Topic 2 Master (Lessons 1-9)', 'emoji': '📙', 'weekly': False},
-    'topic_3_complete': {'label': 'Topic 3 Master (Lessons 18-24)', 'emoji': '👨‍👩‍👧‍👦', 'weekly': False},
+    'topic_3_complete': {'label': 'Topic 3 Master (Lessons 1-7)', 'emoji': '👨‍👩‍👧‍👦', 'weekly': False},
     'weekly_top_1': {'label': 'Weekly Top 1', 'emoji': '🥇', 'weekly': True},
     'weekly_top_2': {'label': 'Weekly Top 2', 'emoji': '🥈', 'weekly': True},
     'weekly_top_3': {'label': 'Weekly Top 3', 'emoji': '🥉', 'weekly': True},

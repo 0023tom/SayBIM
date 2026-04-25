@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1024">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SayBIM</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- Font Awesome for Icons (Placeholder CDN) -->
@@ -16,7 +16,7 @@
     <!-- MediaPipe - Only needed scripts for standard UI if any (currently none) -->
 </head>
 
-<body>
+<body class="dashboard-body">
 
     <!-- Sidebar -->
     <nav class="sidebar">
@@ -128,25 +128,48 @@
             <!-- Progress could go here too, mimicking the image -->
 
             <div class="stats-container">
-                <!-- Active Items Icons (Now on Left) -->
-                <div id="header-active-items" style="display: flex; gap: 8px; align-items: center;">
-                    <!-- Populated by script.js -->
+                <!-- Mobile Profile (Left) -->
+                <div class="mobile-profile" onclick="toggleMobileXp()" style="cursor: pointer; display: none;">
+                    <div class="avatar" id="mobile-avatar" style="width: 40px; height: 40px; overflow: hidden; margin-right: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        {% if user and user.avatar %}
+                        <img src="{{ user.avatar }}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        {{ user.username[0] | upper if user else 'U' }}
+                        {% endif %}
+                    </div>
+                    <!-- Hidden XP Tooltip for Mobile -->
+                    <div id="mobile-xp-popup" class="xp-popup" style="display: none; position: absolute; top: 60px; left: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: var(--shadow-hover); z-index: 100; width: 200px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">{{ user.username if user else 'User' }}</div>
+                        <div class="sidebar-xp-bar" style="height: 8px;">
+                            <div id="mobile-xp-fill" class="sidebar-xp-fill" style="width: 0%;"></div>
+                        </div>
+                        <div id="mobile-xp-text" style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">0 / 100 XP</div>
+                    </div>
                 </div>
 
-                <!-- Divider -->
-                <div id="header-items-divider" style="width: 1px; height: 20px; background: #eee; margin: 0 10px; display: none;"></div>
+                <!-- Stats (Right) -->
+                <div class="top-stats-right" style="display: flex; gap: 10px; align-items: center;">
+                    
+                    <!-- Active Items Icons (Moved here) -->
+                    <div id="header-active-items" style="display: flex; gap: 8px; align-items: center;">
+                        <!-- Populated by script.js -->
+                    </div>
 
-                <div class="stat-item">
-                    <span class="stat-icon" style="color: #ff9800;"><i class="fas fa-fire"></i></span>
-                    <span id="main-streak-count">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon" style="color: var(--accent-red);"><i class="fas fa-heart"></i></span>
-                    <span id="main-heart-count">5</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon" style="color: var(--accent-blue);"><i class="fas fa-gem"></i></span>
-                    <span id="main-diamond-count">1389</span>
+                    <!-- Divider (Optional, could show if items present) -->
+                    <div id="header-items-divider" style="width: 1px; height: 20px; background: #eee; margin: 0 5px; display: none;"></div>
+
+                    <div class="stat-item">
+                        <span class="stat-icon" style="color: #ff9800;"><i class="fas fa-fire"></i></span>
+                        <span id="main-streak-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon" style="color: var(--accent-red);"><i class="fas fa-heart"></i></span>
+                        <span id="main-heart-count">5</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon" style="color: var(--accent-blue);"><i class="fas fa-gem"></i></span>
+                        <span id="main-diamond-count">1389</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -260,7 +283,7 @@
                                 <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Rank</th>
                                 <th style="text-align: left; padding: 10px; color: var(--text-secondary);">User</th>
                                 <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Level</th>
-                                <th style="text-align: center; padding: 10px; color: var(--text-secondary);">Weekly XP</th>
+                                <th style="text-align: center; padding: 10px; color: var(--text-secondary);"><span class="hide-mobile">Weekly </span>XP</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboard-body">
@@ -268,7 +291,13 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Your Position Card -->
+                <div id="leaderboard-your-position"
+                    style="display:none; margin-top:16px; background:linear-gradient(135deg,rgba(102,126,234,0.08),rgba(118,75,162,0.08)); border:2px solid rgba(102,126,234,0.25); border-radius:var(--radius-lg); padding:16px 20px; box-shadow:0 4px 15px rgba(102,126,234,0.12);">
+                </div>
             </section>
+
 
             <!-- Challenge Section -->
             <section id="challenge-section" style="display: none; height: 60vh; text-align: center;">

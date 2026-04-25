@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1024">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Topic Lessons - SayBIM</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         .topic-header {
             text-align: left;
@@ -136,7 +137,7 @@
         }
     </style>
 </head>
-<body style="background-color: var(--bg-color); display: flex; flex-direction: row; height: 100vh; overflow: hidden; margin: 0;">
+<body class="topic-lessons-body" style="background-color: var(--bg-color); display: flex; flex-direction: row; height: 100vh; overflow: hidden; margin: 0;">
 
     <!-- Left Panel: Sticky Header & Back Button -->
     <div style="flex: 1; position: relative; display: flex; flex-direction: column; justify-content: center; padding: 60px;">
@@ -192,7 +193,7 @@
                 {"id": 21, "title": "Birth Order & Stages", "desc": "From the firstborn to adulthood"},
                 {"id": 22, "title": "Relative Circle", "desc": "Expand to uncles, aunts, and cousins"},
                 {"id": 23, "title": "Marriage & Friendship", "desc": "Learn signs for spouses and close friends"},
-                {"id": 24, "title": "FINAL MASTERY EXAM", "desc": "Topic 3 Mastery: Family & Relationships"}
+                {"id": 24, "title": "Topic 3 Mastery", "desc": "Topic 3 Mastery: Family & Relationships"}
             ] %}
         {% else %}
             {% set lessons = [] %}

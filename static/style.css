@@ -729,6 +729,21 @@ body {
     border-bottom: none !important;
 }
 
+/* Highlight the logged-in user's row */
+.leaderboard-my-row {
+    background: linear-gradient(90deg, rgba(102,126,234,0.07) 0%, rgba(118,75,162,0.04) 100%);
+    position: relative;
+}
+
+.leaderboard-my-row td:first-child {
+    border-left: 4px solid #667eea;
+}
+
+.leaderboard-my-row:hover {
+    background: linear-gradient(90deg, rgba(102,126,234,0.12) 0%, rgba(118,75,162,0.07) 100%) !important;
+}
+
+
 /* Authentication Page Styles */
 .auth-body {
     height: 100vh;
@@ -942,7 +957,7 @@ body {
 .float-msg {
     pointer-events: auto;
     font-size: 1.1rem;
-    padding: 25px 40px;
+    padding: 20px 30px;
     border-radius: var(--radius-lg);
     box-shadow: 0 15px 45px rgba(0,0,0,0.3);
     animation: fadeInToast 0.4s forwards;
@@ -953,7 +968,7 @@ body {
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 20px;
+    gap: 15px;
     position: relative;
     overflow: hidden;
     
@@ -964,8 +979,9 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.45);
     color: var(--text-primary);
     
-    max-width: 90%;
-    width: 450px;
+    max-width: 85%;
+    width: auto;
+    min-width: 260px;
 }
 
 /* Settings Section Premium Styling */
@@ -1475,4 +1491,512 @@ input:checked + .premium-slider:before {
     50% { transform: translateY(50vh) rotate(180deg) translateX(-20px); }
     75% { transform: translateY(75vh) rotate(270deg) translateX(20px); }
     100% { transform: translateY(100vh) rotate(360deg) translateX(0); opacity: 0; }
+}
+
+/* Mobile Responsiveness for SayBIM */
+
+@media (max-width: 768px) {
+    /* Global Adjustments */
+    body {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+    }
+
+    /* Toast / Float Message: fit on narrow screens */
+    .float-msg {
+        max-width: 85% !important;
+        min-width: 260px !important;
+        width: auto !important;
+
+        padding: 16px 18px !important;
+        font-size: 0.95rem !important;
+        gap: 10px !important;
+        border-radius: 16px !important;
+    }
+
+    .float-msg .toast-ok-btn {
+        width: 100% !important;
+        padding: 10px !important;
+        font-size: 0.9em !important;
+    }
+
+    .float-msg .toast-confirm-btn,
+    .float-msg .toast-cancel-btn {
+        flex: 1 !important;
+        padding: 9px 12px !important;
+        font-size: 0.88em !important;
+    }
+
+    /* Quiz Feedback Overlay (Correct / Wrong panel at bottom) */
+    .feedback-overlay {
+        position: fixed !important;   /* anchor to viewport, not clipped modal */
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        padding: 18px 20px 24px 20px !important;
+        box-sizing: border-box !important;
+        z-index: 10000 !important;
+    }
+
+    .feedback-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .feedback-details {
+        margin-bottom: 12px !important;
+        width: 100% !important;
+    }
+
+    .feedback-word {
+        font-size: 0.9rem !important;
+        margin-bottom: 5px !important;
+    }
+
+    .feedback-word span {
+        font-size: 1rem !important;
+    }
+
+    .feedback-ok-btn {
+        padding: 13px !important;
+        font-size: 1rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Index/Dashboard Sidebar to Bottom Nav */
+    .sidebar {
+        width: 100% !important;
+        height: 70px !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        flex-direction: row !important;
+        padding: 0 !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 0 !important;
+        background: white;
+        overflow: visible !important;
+    }
+
+    .sidebar-top {
+        display: none !important; /* Hide user profile/toggle in bottom nav */
+    }
+
+    .nav-links {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        justify-content: space-around;
+        align-items: center;
+        margin: 0;
+    }
+
+    .nav-item {
+        margin-bottom: 0 !important;
+        flex: 1;
+    }
+
+    .nav-link {
+        flex-direction: column;
+        padding: 8px 0 !important;
+        font-size: 0.7rem;
+        gap: 4px;
+        justify-content: center !important;
+        border-radius: 0 !important;
+    }
+
+    .nav-icon {
+        margin-right: 0 !important;
+        font-size: 1.4em !important;
+    }
+
+    .nav-link.active::before {
+        display: none; /* Hide the vertical line */
+    }
+
+    .nav-link.active {
+        background: transparent !important;
+        color: var(--accent-blue) !important;
+    }
+
+    /* Main Content Adjustments */
+    .main-content {
+        width: 100%;
+        padding-bottom: 80px; /* Space for bottom nav */
+    }
+
+    .top-bar {
+        padding: 15px 20px !important;
+        justify-content: center !important;
+        background: white !important;
+        box-shadow: var(--shadow-soft) !important;
+    }
+
+    .stats-container {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0 !important;
+    }
+
+    .mobile-profile {
+        display: block !important;
+    }
+
+    .top-stats-right {
+        gap: 8px !important;
+    }
+
+    .stat-item {
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+        border-radius: 12px !important;
+        background: #f7fafc !important;
+    }
+
+    .content-area {
+        padding: 10px 20px 40px 20px !important;
+    }
+
+    .section-title {
+        font-size: 1.5rem !important;
+        text-align: center;
+    }
+
+    .lesson-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    /* Practice Page Responsiveness */
+    body.practice-page {
+        padding: 0 !important;
+        align-items: stretch !important;
+    }
+
+    .practice-page .modal-content {
+        width: 100% !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+
+    /* Practice main area: stack camera top, content bottom on mobile */
+    #practice-main-area {
+        flex-direction: column !important;
+    }
+
+    /* Camera panel takes fixed height on mobile (top) */
+    #practice-cam-side {
+        flex: none !important;
+        width: 100% !important;
+        height: 55vw !important;   /* ~55% of viewport width = good camera box */
+        min-height: 220px !important;
+        max-height: 360px !important;
+    }
+
+    /* Content panel fills remaining space (bottom) */
+    #practice-content-side {
+        flex: 1 !important;
+        width: 100% !important;
+        border-left: none !important;
+        border-top: 1px solid #e2e8f0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #practice-selection-panel,
+    #practice-reference-panel {
+        height: 100% !important;
+    }
+
+    #practice-reference-panel {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 12px !important;
+        align-items: center !important;
+        justify-content: space-evenly !important;
+        padding: 15px 10px !important;
+    }
+
+    #camera-prompt {
+        position: static !important;
+        transform: none !important;
+        margin: 0 !important;
+        flex: 1 !important;
+        max-width: 46% !important;
+        font-size: 0.75em !important;
+        padding: 10px !important;
+        min-width: unset !important;
+        background: rgba(0,0,0,0.85) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+        display: none; /* Controlled by JS */
+    }
+
+    #practice-target-btns {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    #reference-sign-container {
+        padding: 10px !important;
+        flex: 1 !important;
+        max-width: 46% !important;
+        margin: 0 !important;
+        box-shadow: var(--shadow-soft) !important;
+    }
+
+    #reference-sign-container h4 {
+        font-size: 0.6em !important;
+        margin-bottom: 6px !important;
+    }
+
+    #practice-target-label {
+        font-size: 1.4em !important;
+        margin-top: 6px !important;
+    }
+
+
+
+
+    /* Quiz Page Responsiveness */
+    body.quiz-page {
+        padding: 0 !important;
+        align-items: stretch !important;
+        justify-content: stretch !important;
+        min-height: 100vh !important;
+    }
+
+    .quiz-page .modal-content {
+        width: 100% !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        min-height: unset !important;
+    }
+
+    /* Inner content window: reduce padding */
+    .quiz-page .modal-content > div {
+        padding: 20px 16px !important;
+    }
+
+    /* Quiz header: stack vertically on mobile */
+    #quiz-header {
+        position: static !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* Progress bar: full width, no absolute positioning */
+    #quiz-header > div:first-child {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        order: 1;
+    }
+
+    /* Timer: center it */
+    #quiz-timer-container {
+        margin-right: 0 !important;
+        justify-content: center !important;
+        order: 2;
+    }
+
+    /* Utils bar: row, centered */
+    #quiz-utils-bar {
+        width: 100% !important;
+        justify-content: center !important;
+        order: 3;
+    }
+
+    /* Power-up row: static, not absolute */
+    #quiz-powerup-container {
+        position: static !important;
+        justify-content: center !important;
+        margin-top: 0 !important;
+        order: 4;
+    }
+
+    /* Quiz image: smaller on mobile */
+    .quiz-image {
+        width: 150px !important;
+        height: 150px !important;
+        font-size: 3rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* Question text: smaller */
+    .quiz-page h3 {
+        font-size: 1.2em !important;
+        margin-bottom: 16px !important;
+        text-align: center !important;
+    }
+
+    /* Options: single column */
+    .quiz-options {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    /* Option buttons: compact */
+    .quiz-btn {
+        padding: 12px 16px !important;
+        font-size: 0.95em !important;
+    }
+
+    /* Topic Lessons Responsiveness */
+    .topic-lessons-body {
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+
+    /* Left panel becomes a compact top header */
+    .topic-lessons-body > div:first-child {
+        flex: none !important;
+        padding: 20px 20px !important;
+        text-align: left !important;
+        min-height: unset !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    /* Right panel becomes full-width scrollable lesson list */
+    .topic-lessons-body > div:last-child {
+        flex: 1 !important;
+        padding: 20px !important;
+        overflow-y: visible !important;
+    }
+
+    .topic-header {
+        text-align: left !important;
+        flex: 1;
+    }
+
+    .topic-header h1 {
+        font-size: 1.4rem !important;
+        text-align: left !important;
+        margin-bottom: 4px !important;
+    }
+
+    .topic-header p {
+        font-size: 0.85em !important;
+        text-align: left !important;
+    }
+
+    /* Disable S-curve offset on mobile - keep lessons in a straight list */
+    .lesson-path-container {
+        gap: 16px !important;
+        padding: 10px 0 40px 0 !important;
+        max-width: 100% !important;
+    }
+
+    .lesson-step[class*="shape-offset-"] {
+        transform: none !important;
+    }
+
+    .lesson-step {
+        padding: 16px !important;
+    }
+
+    .lesson-icon-circle {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.2em !important;
+        margin-right: 14px !important;
+    }
+
+    .lesson-info h3 {
+        font-size: 1rem !important;
+    }
+
+    .lesson-info p {
+        font-size: 0.82em !important;
+    }
+
+    .back-btn {
+        position: static !important;
+        transform: none !important;
+        padding: 8px 12px !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    .badge-name-text {
+        display: none !important;
+    }
+
+    /* Leaderboard Mobile Fixes */
+    .leaderboard-container {
+        padding: 10px 5px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .leaderboard-container table {
+        font-size: 0.85rem !important;
+        table-layout: fixed;
+    }
+
+    .leaderboard-container th, 
+    .leaderboard-container td {
+        padding: 10px 2px !important;
+    }
+
+    .leaderboard-container th:nth-child(1),
+    .leaderboard-container td:nth-child(1) {
+        width: 50px; /* Rank */
+    }
+
+    .leaderboard-container th:nth-child(2),
+    .leaderboard-container td:nth-child(2) {
+        width: auto; /* User - let it take remaining space */
+    }
+
+    .leaderboard-container th:nth-child(3),
+    .leaderboard-container td:nth-child(3) {
+        width: 45px; /* Level */
+    }
+
+    .leaderboard-container th:nth-child(4),
+    .leaderboard-container td:nth-child(4) {
+        width: 75px; /* XP */
+    }
+
+    .leaderboard-container th {
+        font-size: 0.7rem !important;
+    }
+
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 480px) {
+    .top-bar .stats-container {
+        gap: 10px;
+    }
+
+    .stat-item {
+        padding: 6px 12px !important;
+        font-size: 0.8rem;
+    }
+
+    .nav-text {
+        font-size: 0.6rem;
+    }
 }

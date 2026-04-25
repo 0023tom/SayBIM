@@ -595,28 +595,82 @@ function fetchLeaderboard() {
         .then(users => {
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
+
+            let userRank = -1;
+            let userEntry = null;
+
             users.forEach((user, index) => {
+                const isCurrentUser = user.username === gameState.username;
+                if (isCurrentUser) {
+                    userRank = index + 1;
+                    userEntry = user;
+                }
+
                 const tr = document.createElement('tr');
+
+                if (isCurrentUser) {
+                    tr.classList.add('leaderboard-my-row');
+                }
+
+                const rankCell = index + 1 === 1 ? '🥇' : index + 1 === 2 ? '🥈' : index + 1 === 3 ? '🥉' : `#${index + 1}`;
+                const borderColor = isCurrentUser ? 'rgba(99,179,237,0.25)' : '#f0f0f0';
+
                 tr.innerHTML = `
-                    <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; text-align: center; font-size: 1.6em; font-weight: bold; color: var(--text-secondary);">
-                        ${index + 1 === 1 ? '🥇' : index + 1 === 2 ? '🥈' : index + 1 === 3 ? '🥉' : index + 1}
+                    <td style="padding: 15px 10px; border-bottom: 1px solid ${borderColor}; text-align: center; font-size: ${index < 3 ? '1.6em' : '1.1em'}; font-weight: bold; color: ${isCurrentUser ? 'var(--accent-blue)' : 'var(--text-secondary)'};">
+                        ${rankCell}
                     </td>
-                    <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 0.9em;">
+                    <td style="padding: 15px 10px; border-bottom: 1px solid ${borderColor}; font-weight: bold; display: flex; align-items: center; gap: 12px; overflow: hidden;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: ${isCurrentUser ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'var(--accent-blue)'}; color: white; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 1em; flex-shrink: 0; box-shadow: ${isCurrentUser ? '0 4px 12px rgba(102,126,234,0.4)' : 'var(--shadow-sm)'};">
                             ${user.avatar ? `<img src="${user.avatar}" style="width: 100%; height: 100%; object-fit: cover;">` : user.username.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                            ${user.username}
-                            ${user.username === gameState.username ? '<span style="font-size:0.8em; color:var(--accent-blue)">(You)</span>' : ''}
-                            ${user.equipped_badge ? `<span style="margin-left:8px; font-size:0.75em; background:#edf2ff; color:#3f51b5; border-radius:999px; padding:2px 8px; font-weight:700; white-space:nowrap;">${formatBadgeLabel(user.equipped_badge)}</span>` : ''}
+                        <div style="display: flex; flex-direction: column; overflow: hidden; min-width: 0; flex: 1;">
+                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.05rem; color: ${isCurrentUser ? 'var(--accent-blue)' : 'var(--text-primary)'}; font-weight: ${isCurrentUser ? '800' : '700'};">
+                                ${user.username}
+                                ${isCurrentUser ? '<span style="font-size:0.72em; background:var(--accent-blue); color:white; border-radius:999px; padding:1px 8px; margin-left:6px; font-weight:700; vertical-align:middle;">You</span>' : ''}
+                            </div>
+                            ${user.equipped_badge ? `<div class="leaderboard-badge" onclick="showBadgeDetail(event, '${user.equipped_badge.name}', '${user.equipped_badge.emoji}')" style="margin-top: 4px; font-size:0.7em; background:#edf2ff; color:#3f51b5; border-radius:999px; padding:2px 8px; font-weight:700; white-space:nowrap; cursor:pointer; width: fit-content; display: flex; align-items: center; gap: 4px;">
+                                <span class="badge-emoji">${user.equipped_badge.emoji || '🏅'}</span>
+                                <span class="badge-name-text">${user.equipped_badge.name || ''}</span>
+                            </div>` : ''}
                         </div>
                     </td>
-                    <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">${user.level}</td>
-                    <td style="padding: 15px 10px; border-bottom: 1px solid #f0f0f0; text-align: center; color: var(--accent-yellow); font-weight: bold;">${user.xp} XP</td>
+                    <td style="padding: 15px 10px; border-bottom: 1px solid ${borderColor}; text-align: center; color: ${isCurrentUser ? 'var(--accent-blue)' : 'inherit'}; font-weight: ${isCurrentUser ? '800' : '400'};">${user.level}</td>
+                    <td style="padding: 15px 10px; border-bottom: 1px solid ${borderColor}; text-align: center; color: var(--accent-yellow); font-weight: bold;">${user.xp} XP</td>
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Render "Your Position" card below the table
+            const posCard = document.getElementById('leaderboard-your-position');
+            if (posCard) {
+                if (userRank !== -1 && userEntry) {
+                    const rankLabel = userRank === 1 ? '🥇 #1' : userRank === 2 ? '🥈 #2' : userRank === 3 ? '🥉 #3' : `#${userRank}`;
+                    posCard.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                            <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; display:flex; align-items:center; justify-content:center; font-size:1.1em; font-weight:800; flex-shrink:0; box-shadow:0 4px 12px rgba(102,126,234,0.35);">
+                                ${userEntry.avatar ? `<img src="${userEntry.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : userEntry.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:800; font-size:1rem; color:var(--accent-blue); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${userEntry.username} <span style="font-size:0.72em; background:var(--accent-blue); color:white; border-radius:999px; padding:1px 8px; font-weight:700; vertical-align:middle;">You</span></div>
+                                <div style="font-size:0.82em; color:var(--text-secondary); margin-top:2px;">Level ${userEntry.level} &bull; <span style="color:var(--accent-yellow); font-weight:700;">${userEntry.xp} XP</span> this week</div>
+                            </div>
+                            <div style="text-align:center; flex-shrink:0;">
+                                <div style="font-size:1.5rem; font-weight:900; color:var(--accent-blue);">${rankLabel}</div>
+                                <div style="font-size:0.75em; color:var(--text-secondary); font-weight:600;">Your Rank</div>
+                            </div>
+                        </div>
+                    `;
+                    posCard.style.display = 'block';
+                } else {
+                    posCard.style.display = 'none';
+                }
+            }
         });
+}
+
+function showBadgeDetail(event, name, emoji) {
+    event.stopPropagation();
+    showFloatMessage(`${emoji} ${name}`, 'info');
 }
 
 function formatBadgeLabel(badge) {
@@ -713,27 +767,54 @@ function startSinglePractice(category, target) {
     gameState.targetLetter = target;
     gameState.detectionPaused = false;
 
-    // UI Updates
-    const placeholder = document.getElementById('practice-placeholder');
-    const cameraContainer = document.getElementById('practice-camera-container');
-    const maintenanceOverlay = document.getElementById('maintenance-overlay');
+    // Switch content panel: hide selection, show reference
+    const selectionPanel = document.getElementById('practice-selection-panel');
+    const referencePanel = document.getElementById('practice-reference-panel');
+    const mainTitle = document.getElementById('practice-main-title');
 
-    // On standalone page, we stay in the same view but update components
-    if (placeholder) placeholder.style.display = 'none';
-    if (cameraContainer) cameraContainer.style.display = 'block';
-    if (maintenanceOverlay) maintenanceOverlay.style.display = 'none'; // Hide overlay when active
+    if (selectionPanel) selectionPanel.style.display = 'none';
+    if (referencePanel) referencePanel.style.display = 'flex';
+    if (mainTitle) mainTitle.innerHTML = `Practicing: <span style="color: var(--accent-blue);">${target}</span>`;
 
-    // Ensure camera is open
-    openCameraModal(`Sign the letter/number: ${target}`);
-
-    // Update Reference Image
-    const refContainer = document.getElementById('reference-sign-container');
+    // Update reference image and label
     const refImg = document.getElementById('reference-sign-img');
-    if (refContainer && refImg) {
-        refContainer.style.display = 'block';
+    const targetLabel = document.getElementById('practice-target-label');
+    if (targetLabel) targetLabel.innerText = target;
+    if (refImg) {
         refImg.src = `/static/quiz_media/lesson2/${target.toLowerCase()}.jpg`;
-        refImg.onerror = () => { refContainer.style.display = 'none'; }; // Hide if image missing
+        refImg.onerror = () => {
+            refImg.onerror = null;
+            refImg.src = `https://api.dicebear.com/7.x/initials/svg?seed=${target}&backgroundColor=eef2ff&textColor=3f51b5`;
+        };
     }
+
+    // Start camera (hides placeholder overlay)
+    openCameraModal(`Sign the letter/number: ${target}`);
+}
+
+function resetPracticeUI() {
+    gameState.detectionPaused = true;
+    gameState.targetLetter = null;
+
+    if (camera) camera.stop();
+
+    const selectionPanel = document.getElementById('practice-selection-panel');
+    const referencePanel = document.getElementById('practice-reference-panel');
+    const placeholder = document.getElementById('practice-placeholder');
+    const mainTitle = document.getElementById('practice-main-title');
+    const indicator = document.getElementById('camera-active-status');
+    const prompt = document.getElementById('camera-prompt');
+
+    if (selectionPanel) selectionPanel.style.display = 'flex';
+    if (referencePanel) referencePanel.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'flex';  // show overlay again
+    if (indicator) indicator.style.display = 'none';
+    if (prompt) prompt.style.display = 'none';
+    if (mainTitle) mainTitle.innerHTML = `What would you like to <span style="color: var(--accent-blue);">practice</span> today?`;
+
+    // Clear button selections
+    const container = document.getElementById('practice-target-btns');
+    if (container) container.querySelectorAll('.quiz-btn').forEach(b => b.classList.remove('selected'));
 }
 
 function startPractice(category) {
@@ -1047,6 +1128,12 @@ function updateDashboardStats() {
 
             xpFill.style.width = `${percentage}%`;
             xpText.innerText = `${Math.floor(progressInLevel)} / ${Math.floor(xpForNextGoal)} XP to level up`;
+
+            // Sync with Mobile XP Bar
+            const mobileXpFill = document.getElementById('mobile-xp-fill');
+            const mobileXpText = document.getElementById('mobile-xp-text');
+            if (mobileXpFill) mobileXpFill.style.width = `${percentage}%`;
+            if (mobileXpText) mobileXpText.innerText = `${Math.floor(progressInLevel)} / ${Math.floor(xpForNextGoal)} XP to level up`;
         }
     }
 }
@@ -1611,7 +1698,7 @@ const BADGE_DEFS = [
     { key: 'first_practice_camera', name: 'First Camera Practice (1x)', emoji: '📷', description: 'Complete your first practice using the camera.', weekly: false },
     { key: 'topic_1_complete', name: 'Topic 1 Master (Lessons 1-8)', emoji: '📘', description: 'Complete all lessons in Topic 1 (Greetings).', weekly: false },
     { key: 'topic_2_complete', name: 'Topic 2 Master (Lessons 1-9)', emoji: '📙', description: 'Complete all lessons in Topic 2 (Self-Identity).', weekly: false },
-    { key: 'topic_3_complete', name: 'Topic 3 Master (Lessons 18-24)', emoji: '👨‍👩‍👧‍👦', description: 'Complete all lessons in Topic 3 (Family & Relationships).', weekly: false },
+    { key: 'topic_3_complete', name: 'Topic 3 Master (Lessons 1-7)', emoji: '👨‍👩‍👧‍👦', description: 'Complete all 7 lessons in Topic 3 (Family & Relationships).', weekly: false },
     { key: 'weekly_top_1', name: 'Weekly Top 1', emoji: '🥇', description: 'Reach Rank 1 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_2', name: 'Weekly Top 2', emoji: '🥈', description: 'Reach Rank 2 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_3', name: 'Weekly Top 3', emoji: '🥉', description: 'Reach Rank 3 on the weekly leaderboard.', weekly: true }
@@ -2003,16 +2090,27 @@ async function predictGesture() {
 
         console.log(`Prediction: ${predictedAction} (${confidence.toFixed(2)})`);
 
-        // Update Overlay text to show what is detected (For Freestyle/Testing)
+        // Update Overlay text to show what is detected
         const prompt = document.getElementById('camera-prompt');
-        if (prompt && !practiceSession.active) {
-            prompt.innerHTML = `
-                <div style="text-align:center;">
-                    <strong>Freestyle Testing</strong><br>
-                    Detected: <span style="font-size: 2em; color: var(--accent-blue); display:block;">${predictedAction}</span>
-                    <small>Confidence: ${(confidence * 100).toFixed(0)}%</small>
-                </div>
-            `;
+        if (prompt) {
+            const currentTarget = gameState.targetLetter ? gameState.targetLetter.toUpperCase() : null;
+            if (currentTarget) {
+                prompt.innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="margin-bottom: 5px; opacity: 0.9;">Sign the letter: <strong>${currentTarget}</strong></div>
+                        Detected: <span style="font-size: 2em; color: var(--accent-blue); display:block;">${predictedAction}</span>
+                        <small>Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                    </div>
+                `;
+            } else if (!practiceSession.active) {
+                prompt.innerHTML = `
+                    <div style="text-align:center;">
+                        <strong>Live Detection</strong><br>
+                        Detected: <span style="font-size: 2em; color: var(--accent-blue); display:block;">${predictedAction}</span>
+                        <small>Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                    </div>
+                `;
+            }
         }
 
         // Enforce target matching if a specific target is set
@@ -2072,10 +2170,20 @@ function handleCorrectAnswer(action) {
         updateGameState(data);
         if (data.message && data.message.includes('+')) {
             showFloatMessage(data.message, 'success', () => {
+                if (window.CURRENT_PAGE_TYPE === 'practice') {
+                    resetPracticeUI();
+                }
                 processBadgeQueue();
             });
         } else {
-            processBadgeQueue();
+            if (window.CURRENT_PAGE_TYPE === 'practice') {
+                showFloatMessage("Correct! Well done.", 'success', () => {
+                    resetPracticeUI();
+                    processBadgeQueue();
+                });
+            } else {
+                processBadgeQueue();
+            }
         }
     });
 
@@ -2165,12 +2273,11 @@ async function openCameraModal(customText) {
     const modal = document.getElementById('camera-modal');
     if (modal) modal.classList.add('active');
 
-    // On standalone page, we just need to ensure the camera starts
+    // On practice page, hide the placeholder overlay and show camera indicator
     if (window.CURRENT_PAGE_TYPE === 'practice') {
-        const cameraContainer = document.getElementById('practice-camera-container');
-        if (cameraContainer) cameraContainer.style.display = 'block';
+        const placeholder = document.getElementById('practice-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
 
-        // Show camera active indicator
         const indicator = document.getElementById('camera-active-status');
         if (indicator) indicator.style.display = 'flex';
     }
@@ -2339,5 +2446,25 @@ function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
         sidebar.classList.toggle('collapsed');
+    }
+}
+
+function toggleMobileXp() {
+    const popup = document.getElementById('mobile-xp-popup');
+    if (popup) {
+        const isHidden = popup.style.display === 'none' || popup.style.display === '';
+        popup.style.display = isHidden ? 'block' : 'none';
+        
+        // Close when clicking outside
+        if (isHidden) {
+            const closeHandler = (e) => {
+                const profile = document.querySelector('.mobile-profile');
+                if (!popup.contains(e.target) && (!profile || !profile.contains(e.target))) {
+                    popup.style.display = 'none';
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeHandler), 10);
+        }
     }
 }
