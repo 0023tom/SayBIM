@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1024">
     <title>SayBIM</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- Font Awesome for Icons (Placeholder CDN) -->
@@ -20,7 +20,12 @@
 
     <!-- Sidebar -->
     <nav class="sidebar">
-        <div class="user-profile">
+        <!-- Top Section -->
+        <div class="sidebar-top">
+            <div class="sidebar-toggle" onclick="toggleSidebar()" style="cursor: pointer; font-size: 1.5em; color: var(--text-secondary); transition: color 0.3s;" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="user-profile">
             <div class="avatar" id="sidebar-avatar" style="overflow: hidden;">
                 {% if user and user.avatar %}
                 <img src="{{ user.avatar }}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover;">
@@ -47,55 +52,56 @@
                 </div>
             </div>
         </div>
+        </div>
 
 
         <ul class="nav-links">
             <li class="nav-item">
                 <a href="#" class="nav-link active">
                     <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-                    Lesson
+                    <span class="nav-text">Lesson</span>
                 </a>
             </li>
             <li class="nav-item" style="display: none;">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-dumbbell"></i></span>
-                    Challenge
+                    <span class="nav-text">Challenge</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-trophy"></i></span>
-                    Leaderboard
+                    <span class="nav-text">Leaderboard</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
-                    Practice
+                    <span class="nav-text">Practice</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-medal"></i></span>
-                    Badges
+                    <span class="nav-text">Badges</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-store"></i></span>
-                    Shop
+                    <span class="nav-text">Shop</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                    Setting
+                    <span class="nav-text">Setting</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="javascript:void(0)" onclick="confirmExit(() => window.location.href='/logout')" class="nav-link" style="color: var(--accent-red);">
                     <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-                    Logout
+                    <span class="nav-text">Logout</span>
                 </a>
             </li>
         </ul>
@@ -175,6 +181,19 @@
                         <div class="lesson-desc">Learn the art of introducing yourself and spelling with confidence.</div>
                         <div class="progress-bar-bg">
                             <div class="progress-bar-fill" id="progress-bar-2" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Topic 3 -->
+                    <div class="lesson-card" id="lesson-card-3" onclick="window.location.href='/topic/3'">
+                        <div class="card-header">
+                            <span style="font-size: 0.8em; color: var(--accent-blue); font-weight: bold;" id="lesson-text-3">Topic 3</span>
+                            <i id="lesson-icon-3" class="fas fa-book-open" style="color: var(--accent-blue);"></i>
+                        </div>
+                        <div class="lesson-title">Family & Relationships</div>
+                        <div class="lesson-desc">Learn signs for family members and relationships.</div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar-3" style="width: 0%;"></div>
                         </div>
                     </div>
 

@@ -187,7 +187,8 @@ function showQuitConfirmation(message, onConfirm, onCancel) {
 
 function confirmExit(onConfirm) {
     const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
-                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9);
+                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9) || 
+                      (window.CURRENT_TOPIC_ID === 3 && window.CURRENT_LESSON_ID === 24);
     
     if (isMastery) {
         pauseQuizTimer();
@@ -247,6 +248,7 @@ const practiceConfig = {
 function renderLessonCards() {
     let t1Prog = gameState.topicProgress ? (gameState.topicProgress['1'] || 1) : 1;
     let t2Prog = gameState.topicProgress ? (gameState.topicProgress['2'] || 1) : 1;
+    let t3Prog = gameState.topicProgress ? (gameState.topicProgress['3'] || 18) : 18;
 
     let bar1 = document.getElementById('progress-bar-1');
     let card1 = document.getElementById('lesson-card-1');
@@ -269,6 +271,19 @@ function renderLessonCards() {
             bar2.style.background = 'var(--accent-green)';
         } else {
             bar2.style.width = `${((t2Prog - 1) / 9) * 100}%`;
+        }
+    }
+
+    let bar3 = document.getElementById('progress-bar-3');
+    let card3 = document.getElementById('lesson-card-3');
+    let icon3 = document.getElementById('lesson-icon-3');
+    let text3 = document.getElementById('lesson-text-3');
+    if (bar3) {
+        if (t3Prog > 24) {
+            bar3.style.width = '100%';
+            bar3.style.background = 'var(--accent-green)';
+        } else {
+            bar3.style.width = `${((t3Prog - 18) / 7) * 100}%`;
         }
     }
 
@@ -295,6 +310,30 @@ function renderLessonCards() {
         }
         if (text2) text2.style.color = 'var(--text-secondary)';
     }
+
+    // Topic 2 Unlocks Topic 3
+    let isT3Unlocked = t2Prog > 9;
+    if (isT3Unlocked) {
+        if (card3) {
+            card3.classList.remove('locked');
+            card3.style.pointerEvents = "auto";
+        }
+        if (icon3) {
+            icon3.className = 'fas fa-book-open';
+            icon3.style.color = 'var(--accent-blue)';
+        }
+        if (text3) text3.style.color = 'var(--accent-blue)';
+    } else {
+        if (card3) {
+            card3.classList.add('locked');
+            card3.style.pointerEvents = "none";
+        }
+        if (icon3) {
+            icon3.className = 'fas fa-lock';
+            icon3.style.color = 'var(--text-secondary)';
+        }
+        if (text3) text3.style.color = 'var(--text-secondary)';
+    }
 }
 
 function switchSection(section) {
@@ -310,7 +349,7 @@ function switchSection(section) {
     const targetText = sectionToNavText[section];
     const links = document.querySelectorAll('.nav-link');
     links.forEach(l => {
-        if (l.innerText.trim() === targetText) {
+        if (l.textContent.trim() === targetText) {
             l.classList.add('active');
         } else {
             l.classList.remove('active');
@@ -340,6 +379,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         switchSection(targetSection);
     }
 
+    // Auto-collapse sidebar on mobile/narrow screens
+    if (window.innerWidth <= 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.add('collapsed');
+        }
+    }
+
     // 1. Page-Specific Rendering
     if (window.CURRENT_PAGE_TYPE === 'quiz') {
         startHeartTimer();
@@ -353,7 +400,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const links = document.querySelectorAll('.nav-link');
     links.forEach(link => {
         link.addEventListener('click', (e) => {
-            const text = link.innerText.trim();
+            const text = link.textContent.trim();
             const textToSection = {
                 'Lesson': 'lesson',
                 'Practice': 'practice',
@@ -507,9 +554,14 @@ async function initGame() {
         gameState.currentQuestionIndex = 0;
 
         // Mastery Quizzes: Topic 1 (L8) or Topic 2 (L9)
-        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
-            (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
-            currentRemainingTime = 180;
+        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) || (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
+            if (gameState.currentTopicId === 3 && gameState.currentLessonId === 24) {
+                currentRemainingTime = 300;
+                document.getElementById('quiz-timer-display').innerText = '05:00';
+            } else {
+                currentRemainingTime = 180;
+                document.getElementById('quiz-timer-display').innerText = '03:00';
+            }
             startQuizTimer();
         }
         updateQuizUI();
@@ -809,7 +861,8 @@ function updateQuizItems() {
 
     // Add Timer Freeze button if Mastery Lesson and have count
     const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
-                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9);
+                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9) || 
+                      (window.CURRENT_TOPIC_ID === 3 && window.CURRENT_LESSON_ID === 24);
     
     if (isMastery && gameState.timerFreezeCount > 0) {
         const powerupContainer = document.getElementById('quiz-powerup-container');
@@ -1395,15 +1448,15 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer, xpMessage = "") 
                 processBadgeQueue(() => {
                     nextQuestion();
                     if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
-                        (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+                        (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) ||
+                        (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
                         startQuizTimer();
                     }
                 });
             } else {
                 nextQuestion();
                 // Only resume timer for Mastery Review lessons
-                if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
-                    (gameState.currentTopicId === 2 && gameState.currentLessonId === 9)) {
+                if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) || (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
                     startQuizTimer();
                 }
             }
@@ -1558,6 +1611,7 @@ const BADGE_DEFS = [
     { key: 'first_practice_camera', name: 'First Camera Practice (1x)', emoji: '📷', description: 'Complete your first practice using the camera.', weekly: false },
     { key: 'topic_1_complete', name: 'Topic 1 Master (Lessons 1-8)', emoji: '📘', description: 'Complete all lessons in Topic 1 (Greetings).', weekly: false },
     { key: 'topic_2_complete', name: 'Topic 2 Master (Lessons 1-9)', emoji: '📙', description: 'Complete all lessons in Topic 2 (Self-Identity).', weekly: false },
+    { key: 'topic_3_complete', name: 'Topic 3 Master (Lessons 18-24)', emoji: '👨‍👩‍👧‍👦', description: 'Complete all lessons in Topic 3 (Family & Relationships).', weekly: false },
     { key: 'weekly_top_1', name: 'Weekly Top 1', emoji: '🥇', description: 'Reach Rank 1 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_2', name: 'Weekly Top 2', emoji: '🥈', description: 'Reach Rank 2 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_3', name: 'Weekly Top 3', emoji: '🥉', description: 'Reach Rank 3 on the weekly leaderboard.', weekly: true }
@@ -2279,4 +2333,11 @@ function useTimerFreeze() {
             }, 20000);
         }
     });
+}
+
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+    }
 }

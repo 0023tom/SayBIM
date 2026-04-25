@@ -72,7 +72,33 @@ SIGN_TO_MEDIA = {
     "Apa": get_media_url("what.jpg", "lesson2"),
     "Siapa": get_media_url("who.jpg", "lesson2"),
     "Mana": get_media_url("where.jpg", "lesson2"),
-    "Kawan": get_media_url("friend.jpg", "lesson2")
+    "Kawan": get_media_url("friend.jpg", "lesson2"),
+    # Topic 3 -> lesson3 folder
+    "Keluarga": get_media_url("family.jpg", "lesson3"),
+    "Ayah": get_media_url("father.jpg", "lesson3"),
+    "Ibu": get_media_url("mother.jpg", "lesson3"),
+    "Orang": get_media_url("person.jpg", "lesson3"),
+    "Abang": get_media_url("elder_brother.jpg", "lesson3"),
+    "Kakak": get_media_url("elder_sister.jpg", "lesson3"),
+    "Adik Lelaki": get_media_url("younger_brother.jpg", "lesson3"),
+    "Adik Perempuan": get_media_url("younger_sister.jpg", "lesson3"),
+    "Datuk": get_media_url("grandfather.jpg", "lesson3"),
+    "Nenek": get_media_url("grandmother.jpg", "lesson3"),
+    "Cucu": get_media_url("grandchild.jpg", "lesson3"),
+    "Bayi": get_media_url("baby.jpg", "lesson3"),
+    "Anak Sulung": get_media_url("first_born.jpg", "lesson3"),
+    "Anak Bongsu": get_media_url("last_child.jpg", "lesson3"),
+    "Kanak-kanak": get_media_url("children.jpg", "lesson3"),
+        "Dewasa": get_media_url("adult.jpg", "lesson3"),
+    "Pakcik": get_media_url("uncle.jpg", "lesson3"),
+    "Makcik": get_media_url("auntie.jpg", "lesson3"),
+    "Sepupu": get_media_url("cousin.jpg", "lesson3"),
+    "Saudara": get_media_url("relative.jpg", "lesson3"),
+    "Lelaki": get_media_url("male.jpg", "lesson3"),
+    "Perempuan": get_media_url("female.jpg", "lesson3"),
+    "Suami": get_media_url("husband.jpg", "lesson3"),
+    "Isteri": get_media_url("wife.jpg", "lesson3"),
+    "Kawan Rapat": get_media_url("close_friend.jpg", "lesson3")
 }
 
 SIGN_HINTS = {
@@ -144,10 +170,7 @@ SIGN_HINTS = {
         "conceptual": "Asking for assistance.",
         "action": "One hand lifting the other palm upwards."
     },
-    "Selamat Jalan": {
-        "conceptual": "Wishing a safe trip to someone departing.",
-        "action": "Sign for 'Safe/Well' followed by fingers moving forward like walking."
-    },
+    "Selamat Jalan": {"conceptual": "A hand waving 'Goodbye.'", "action": ""},
     "Salam": {
         "conceptual": "A respectful greeting, often used with elders.",
         "action": "Extending both hands gracefully."
@@ -169,19 +192,46 @@ SIGN_HINTS = {
         "action": "Hands making a circular motion representing a full year passed."
     },
     # Topic 2 Hints
-    "Saya": {"conceptual": "Referring to yourself.", "action": "Pointing to your own chest."},
-    "Anda / Kamu": {"conceptual": "Referring to the person you are talking to.", "action": "Pointing forward towards the other person."},
-    "Dia": {"conceptual": "Referring to a third person.", "action": "Pointing to the side."},
+    "Saya": {"conceptual": "Pointing the index finger directly to one's own chest.", "action": ""},
+    "Anda / Kamu": {"conceptual": "Pointing the index finger directly toward the listener.", "action": ""},
+    "Dia": {"conceptual": "Pointing the index finger to the side (at an imaginary third person).", "action": ""},
     "Nama": {"conceptual": "The word for one's identity.", "action": "Tapping chest or shoulder area."},
     "Tinggal": {"conceptual": "Refers to living or staying in a place.", "action": "Hands moving down as if settling into a location."},
-    "Apa": {"conceptual": "Asking for information about something.", "action": "Hands up with palms open, slight shrug."},
-    "Siapa": {"conceptual": "Asking about a person's identity.", "action": "Index finger circling near the lips."},
-    "Mana": {"conceptual": "Asking about a location.", "action": "Hands moving side to side as if searching."},
+    "Apa": {"conceptual": "Index finger shaking side-to-side (the 'What' look).", "action": ""},
+    "Siapa": {"conceptual": "Index finger circling in front of the face (the 'Who' expression).", "action": ""},
+    "Mana": {"conceptual": "Palms facing up, moving slightly side-to-side (the 'Where' look).", "action": ""},
     "A": {"conceptual": "First letter of the alphabet.", "action": "Fist with thumb resting against the side of the index finger."},
     "B": {"conceptual": "Second letter of the alphabet.", "action": "Flat hand with thumb tucked into the palm."},
     "C": {"conceptual": "Hand curved like the letter 'C'.", "action": "Hand in a curved shape."},
     "1": {"conceptual": "Number one.", "action": "Index finger pointed up."},
-    "7": {"conceptual": "Number seven.", "action": "Thumb and ring finger touching."}
+    "7": {"conceptual": "Number seven.", "action": "Thumb and ring finger touching."},
+    # Topic 3 Hints
+    "Keluarga": {"conceptual": "Both hands form a 'C' shape and move in a circular motion to meet.", "action": ""},
+    "Ayah": {"conceptual": "The thumb of an open hand taps the forehead (representing the 'cap' or male head).", "action": ""},
+    "Ibu": {"conceptual": "The thumb of an open hand taps the chin/jawline (representing the 'veil' or female face).", "action": ""},
+    "Orang": {"conceptual": "The index finger points downward or moves in a slight vertical line.", "action": ""},
+    "Abang": {"conceptual": "Hand at the forehead (Male) + an upward motion (Older).", "action": ""},
+    "Kakak": {"conceptual": "Hand at the chin (Female) + an upward motion (Older).", "action": ""},
+    "Adik Lelaki": {"conceptual": "Hand at the forehead (Male) + a downward motion (Younger).", "action": ""},
+    "Adik Perempuan": {"conceptual": "Hand at the chin (Female) + a downward motion (Younger).", "action": ""},
+    "Datuk": {"conceptual": "Similar to 'Ayah' but with a 'bent' finger or a double tap to show age.", "action": ""},
+    "Nenek": {"conceptual": "Similar to 'Ibu' but with a 'bent' finger or a double tap to show age.", "action": ""},
+    "Cucu": {"conceptual": "Fingers spelling 'C-C' or a hand motion indicating a small person height.", "action": ""},
+    "Bayi": {"conceptual": "Arms crossed in front of the chest as if cradling/rocking a baby.", "action": ""},
+    "Anak Sulung": {"conceptual": "Pointing to the thumb or the 'top' of a list (The first).", "action": ""},
+    "Anak Bongsu": {"conceptual": "Pointing to the pinky finger (The last/smallest).", "action": ""},
+    "Kanak-kanak": {"conceptual": "Patting motions at a low height (as if patting children's heads).", "action": ""},
+    "Dewasa": {"conceptual": "Hand moving from a low height to a high height (Growing up).", "action": ""},
+    "Pakcik": {"conceptual": "The 'P' handshape placed near the forehead/temple.", "action": ""},
+    "Makcik": {"conceptual": "The 'M' handshape placed near the jaw/chin.", "action": ""},
+    "Sepupu": {"conceptual": "The 'S' handshape moving in a slight circle or side-to-side.", "action": ""},
+    "Saudara": {"conceptual": "Two index fingers meeting or a 'hooking' motion showing a link.", "action": ""},
+    "Lelaki": {"conceptual": "Hand near the forehead/cap area.", "action": ""},
+    "Perempuan": {"conceptual": "Hand tracing the jawline.", "action": ""},
+    "Suami": {"conceptual": "Sign for 'Lelaki' (Male) followed by the 'Marriage/Ring' sign.", "action": ""},
+    "Isteri": {"conceptual": "Sign for 'Perempuan' (Female) followed by the 'Marriage/Ring' sign.", "action": ""},
+    "Kawan Rapat": {"conceptual": "Two index fingers pressed tightly together (showing 'closeness').", "action": ""},
+    "Kawan": {"conceptual": "Two hands clasping or shaking each other once.", "action": ""}
 }
 
 # Data structure mapping Topic 1 -> Lessons 1 to 8
@@ -628,6 +678,93 @@ TOPIC_1_POOL = [
     "Salam (Regards)", "Tahniah", "Selamat Hari Jadi", "Selamat Ulangtahun"
 ]
 
+
+
+# Topic 3 Data
+TOPIC_3_DATA = {
+    18: [ # The Parents & Core
+        {"type": "Visual", "text": "Identify this sign:", "target": "Keluarga", "media_url": SIGN_TO_MEDIA["Keluarga"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Ayah", "media_url": SIGN_TO_MEDIA["Ayah"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Ibu", "media_url": SIGN_TO_MEDIA["Ibu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Orang", "media_url": SIGN_TO_MEDIA["Orang"]},
+        {"type": "Logic", "text": "Which sign represents your male parent?", "target": "Ayah", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'My Father'", "correct_sequence": ["Ayah", "Saya"], "options": ["Ayah", "Saya", "Ibu", "Keluarga"]},
+        {"type": "Sequence", "text": "Sort to form: 'My Mother'", "correct_sequence": ["Ibu", "Saya"], "options": ["Ibu", "Saya", "Ayah", "Keluarga"]},
+        {"type": "Sequence", "text": "Sort to form: 'Hello, Mother'", "correct_sequence": ["Hai / Hello", "Ibu"], "options": ["Hai / Hello", "Ibu", "Ayah", "Assalamualaikum"]},
+        {"type": "Sequence", "text": "Sort to form: 'How are you, Father?'", "correct_sequence": ["Apa Khabar", "Ayah"], "options": ["Apa Khabar", "Ayah", "Ibu", "Siapa"]},
+        {"type": "Context", "text": "Pointing to yourself means...?", "target": "Saya", "media_url": None}
+    ],
+    19: [ # Siblings & Gender
+        {"type": "Visual", "text": "Identify this sign:", "target": "Abang", "media_url": SIGN_TO_MEDIA["Abang"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Kakak", "media_url": SIGN_TO_MEDIA["Kakak"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Adik Lelaki", "media_url": SIGN_TO_MEDIA["Adik Lelaki"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Adik Perempuan", "media_url": SIGN_TO_MEDIA["Adik Perempuan"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Lelaki", "media_url": SIGN_TO_MEDIA["Lelaki"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Perempuan", "media_url": SIGN_TO_MEDIA["Perempuan"]},
+        {"type": "Sequence", "text": "Sort to form: 'My Elder Sister'", "correct_sequence": ["Kakak", "Saya"], "options": ["Kakak", "Saya", "Abang", "Dia"]},
+        {"type": "Sequence", "text": "Sort to form: 'Your Younger Brother'", "correct_sequence": ["Adik Lelaki", "Anda / Kamu"], "options": ["Adik Lelaki", "Anda / Kamu", "Abang", "Saya"]},
+        {"type": "Sequence", "text": "Sort to form: 'Is he a male?'", "correct_sequence": ["Dia", "Lelaki", "Apa"], "options": ["Dia", "Lelaki", "Apa", "Anda / Kamu"]},
+        {"type": "Sequence", "text": "Sort to form: 'Goodbye, Brother'", "correct_sequence": ["Selamat Jalan", "Abang"], "options": ["Selamat Jalan", "Abang", "Sama-sama", "Kakak"]}
+    ],
+    20: [ # The Elders & Youth
+        {"type": "Visual", "text": "Identify this sign:", "target": "Datuk", "media_url": SIGN_TO_MEDIA["Datuk"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Nenek", "media_url": SIGN_TO_MEDIA["Nenek"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Cucu", "media_url": SIGN_TO_MEDIA["Cucu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Bayi", "media_url": SIGN_TO_MEDIA["Bayi"]},
+        {"type": "Logic", "text": "Father's Father is...?", "target": "Datuk", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'My Grandchild'", "correct_sequence": ["Cucu", "Saya"], "options": ["Cucu", "Saya", "Nenek", "Bayi"]},
+        {"type": "Sequence", "text": "Sort to form: 'Her Grandmother'", "correct_sequence": ["Nenek", "Dia"], "options": ["Nenek", "Dia", "Datuk", "Saya"]},
+        {"type": "Sequence", "text": "Sort to form: 'Thank you, Grandpa'", "correct_sequence": ["Terima Kasih", "Datuk"], "options": ["Terima Kasih", "Datuk", "Sama-sama", "Nenek"]},
+        {"type": "Sequence", "text": "Sort to form: 'Where is the baby?'", "correct_sequence": ["Bayi", "Mana"], "options": ["Bayi", "Mana", "Apa", "Siapa"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Dewasa", "media_url": SIGN_TO_MEDIA["Dewasa"]}
+    ],
+    21: [ # Birth Order & Kids
+        {"type": "Visual", "text": "Identify this sign:", "target": "Anak Sulung", "media_url": SIGN_TO_MEDIA["Anak Sulung"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Anak Bongsu", "media_url": SIGN_TO_MEDIA["Anak Bongsu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Kanak-kanak", "media_url": SIGN_TO_MEDIA["Kanak-kanak"]},
+        {"type": "Logic", "text": "First-born child is...?", "target": "Anak Sulung", "media_url": None},
+        {"type": "Logic", "text": "Last-born child is...?", "target": "Anak Bongsu", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'My First Born'", "correct_sequence": ["Anak Sulung", "Saya"], "options": ["Anak Sulung", "Saya", "Anak Bongsu", "Kanak-kanak"]},
+        {"type": "Sequence", "text": "Sort to form: 'Your Last Child'", "correct_sequence": ["Anak Bongsu", "Anda / Kamu"], "options": ["Anak Bongsu", "Anda / Kamu", "Anak Sulung", "Saya"]},
+        {"type": "Sequence", "text": "Sort to form: 'What are the children?'", "correct_sequence": ["Kanak-kanak", "Apa"], "options": ["Kanak-kanak", "Apa", "Mana", "Siapa"]},
+        {"type": "Sequence", "text": "Sort to form: 'Who is the last child?'", "correct_sequence": ["Anak Bongsu", "Siapa"], "options": ["Anak Bongsu", "Siapa", "Apa", "Mana"]},
+        {"type": "Visual", "text": "Identify this sign (Review):", "target": "Dewasa", "media_url": SIGN_TO_MEDIA["Dewasa"]}
+    ],
+    22: [ # Relatives & Friends
+        {"type": "Visual", "text": "Identify this sign:", "target": "Pakcik", "media_url": SIGN_TO_MEDIA["Pakcik"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Makcik", "media_url": SIGN_TO_MEDIA["Makcik"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Sepupu", "media_url": SIGN_TO_MEDIA["Sepupu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Kawan Rapat", "media_url": SIGN_TO_MEDIA["Kawan Rapat"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Saudara", "media_url": SIGN_TO_MEDIA["Saudara"]},
+        {"type": "Sequence", "text": "Sort to form: 'My Cousin'", "correct_sequence": ["Sepupu", "Saya"], "options": ["Sepupu", "Saya", "Saudara", "Dia"]},
+        {"type": "Sequence", "text": "Sort to form: 'Your Close Friend'", "correct_sequence": ["Kawan Rapat", "Anda / Kamu"], "options": ["Kawan Rapat", "Anda / Kamu", "Kawan", "Saya"]},
+        {"type": "Logic", "text": "Identify Auntie", "target": "Makcik", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Hello, Uncle'", "correct_sequence": ["Hai / Hello", "Pakcik"], "options": ["Hai / Hello", "Pakcik", "Makcik", "Terima Kasih"]},
+        {"type": "Sequence", "text": "Sort to form: 'Where is the relative?'", "correct_sequence": ["Saudara", "Mana"], "options": ["Saudara", "Mana", "Apa", "Siapa"]}
+    ],
+    23: [ # Marriage & Logic
+        {"type": "Visual", "text": "Identify this sign:", "target": "Suami", "media_url": SIGN_TO_MEDIA["Suami"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Isteri", "media_url": SIGN_TO_MEDIA["Isteri"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Dia", "media_url": SIGN_TO_MEDIA["Dia"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Anda / Kamu", "media_url": SIGN_TO_MEDIA["Anda / Kamu"]},
+        {"type": "Logic", "text": "A married woman is...?", "target": "Isteri", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'My Wife'", "correct_sequence": ["Isteri", "Saya"], "options": ["Isteri", "Saya", "Suami", "Dia"]},
+        {"type": "Sequence", "text": "Sort to form: 'Your Husband'", "correct_sequence": ["Suami", "Anda / Kamu"], "options": ["Suami", "Anda / Kamu", "Isteri", "Saya"]},
+        {"type": "Sequence", "text": "Sort to form: 'Who is she?'", "correct_sequence": ["Dia", "Siapa"], "options": ["Dia", "Siapa", "Apa", "Mana"]},
+        {"type": "Sequence", "text": "Sort to form: 'What is husband?'", "correct_sequence": ["Suami", "Apa"], "options": ["Suami", "Apa", "Mana", "Siapa"]},
+        {"type": "Sequence", "text": "Sort to form: 'Thank you, Wife'", "correct_sequence": ["Terima Kasih", "Isteri"], "options": ["Terima Kasih", "Isteri", "Sama-sama", "Suami"]}
+    ]
+}
+
+
+
+TOPIC_3_POOL = [
+    "Keluarga", "Ayah", "Ibu", "Orang", "Abang", "Kakak", "Adik Lelaki", "Adik Perempuan",
+    "Datuk", "Nenek", "Cucu", "Bayi", "Anak Sulung", "Anak Bongsu", "Kanak-kanak", "Dewasa",
+    "Pakcik", "Makcik", "Sepupu", "Saudara", "Lelaki", "Perempuan", "Suami", "Isteri", "Kawan Rapat",
+    "Kawan", "Saya", "Anda / Kamu", "Dia", "Siapa", "Mana", "Apa", "Selamat Jalan", "Hai / Hello", "Apa Khabar", "Terima Kasih", "Anak Sulung", "Anak Bongsu"
+]
+
 TOPIC_2_POOL = [
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
@@ -819,6 +956,150 @@ def generate_topic_quiz(topic_id, lesson_id):
                 })
             return final_qs
 
+
+    # Topic 3 Logic
+    if topic_id == 3:
+        pool = TOPIC_3_POOL
+        if lesson_id == 24: # Final Mastery Exam
+            all_questions = []
+            for l_id in range(18, 24):
+                all_questions.extend(TOPIC_3_DATA[l_id])
+            
+            # Tier 1: Fast Visual Identification (10 Qs)
+            visual_qs = [q for q in all_questions if q['type'] == 'Visual']
+            tier1 = random.sample(visual_qs, min(10, len(visual_qs)))
+            
+            # Tier 2: Complex Sorting (No sana, sini, itu, ini)
+            tier2 = [
+                {"type": "Sequence", "text": "Sort to form: 'My mother'", "correct_sequence": ["Ibu", "Saya"], "options": ["Ibu", "Saya", "Ayah", "Keluarga"]},
+                {"type": "Sequence", "text": "Sort to form: 'Your cousin'", "correct_sequence": ["Sepupu", "Anda / Kamu"], "options": ["Sepupu", "Anda / Kamu", "Saudara", "Dia"]},
+                {"type": "Sequence", "text": "Sort to form: 'His uncle'", "correct_sequence": ["Pakcik", "Dia"], "options": ["Pakcik", "Dia", "Makcik", "Saya"]},
+                {"type": "Sequence", "text": "Sort to form: 'My youngest sister'", "correct_sequence": ["Adik Perempuan", "Saya"], "options": ["Adik Perempuan", "Anak Bongsu", "Saya", "Kakak", "Dewasa"]},
+                {"type": "Sequence", "text": "Sort to form: 'My grandfather'", "correct_sequence": ["Datuk", "Saya"], "options": ["Datuk", "Saya", "Dewasa", "Kanak-kanak", "Nenek"]},
+                {"type": "Sequence", "text": "Sort to form: 'Who is the relative?'", "correct_sequence": ["Saudara", "Siapa"], "options": ["Saudara", "Siapa", "Orang", "Mana"]},
+                {"type": "Sequence", "text": "Sort to form: 'He is my best friend'", "correct_sequence": ["Dia", "Kawan Rapat", "Saya"], "options": ["Dia", "Kawan Rapat", "Saya", "Kawan", "Suami"]},
+                {"type": "Sequence", "text": "Sort to form: 'My family'", "correct_sequence": ["Keluarga", "Saya"], "options": ["Keluarga", "Saya", "Ayah", "Ibu"]},
+                {"type": "Sequence", "text": "Sort to form: 'Where is your cousin?'", "correct_sequence": ["Sepupu", "Anda / Kamu", "Mana"], "options": ["Sepupu", "Anda / Kamu", "Mana", "Apa"]},
+                {"type": "Sequence", "text": "Sort to form: 'She is my wife'", "correct_sequence": ["Dia", "Isteri", "Saya"], "options": ["Dia", "Isteri", "Saya", "Perempuan", "Suami"]}
+            ]
+            
+            # Tier 3: Integration (Greetings + Identity + Family)
+            tier3 = [
+                {"type": "Sequence", "text": "Sort to form: 'Hi, who is your close friend?'", "correct_sequence": ["Hai / Hello", "Kawan Rapat", "Anda / Kamu", "Siapa"], "options": ["Hai / Hello", "Kawan Rapat", "Anda / Kamu", "Siapa", "Apa"]},
+                {"type": "Sequence", "text": "Sort to form: 'Thank you, grandpa'", "correct_sequence": ["Terima Kasih", "Datuk"], "options": ["Terima Kasih", "Datuk", "Nenek", "Sama-sama"]},
+                {"type": "Sequence", "text": "Sort to form: 'Goodbye, uncle'", "correct_sequence": ["Selamat Jalan", "Pakcik"], "options": ["Selamat Jalan", "Pakcik", "Makcik", "Terima Kasih"]},
+                {"type": "Sequence", "text": "Sort to form: 'How are you, brother?'", "correct_sequence": ["Apa Khabar", "Abang"], "options": ["Apa Khabar", "Abang", "Khabar Baik", "Adik Lelaki"]},
+                {"type": "Sequence", "text": "Sort to form: 'Good morning, mother'", "correct_sequence": ["Selamat Pagi", "Ibu"], "options": ["Selamat Pagi", "Ibu", "Ayah", "Selamat Malam"]},
+                {"type": "Sequence", "text": "Sort to form: 'Congratulations! Your baby is a boy'", "correct_sequence": ["Tahniah", "Bayi", "Anda / Kamu", "Lelaki"], "options": ["Tahniah", "Bayi", "Anak Sulung", "Anda / Kamu", "Lelaki", "Perempuan"]},
+                {"type": "Sequence", "text": "Sort to form: 'Excuse me, where is your father?'", "correct_sequence": ["Maaf (Excuse)", "Ayah", "Anda / Kamu", "Mana"], "options": ["Maaf (Excuse)", "Ayah", "Anda / Kamu", "Mana", "Siapa"]},
+                {"type": "Sequence", "text": "Sort to form: 'My name is...'", "correct_sequence": ["Nama", "Saya"], "options": ["Nama", "Saya", "Dia", "Anda / Kamu"]},
+                {"type": "Sequence", "text": "Sort to form: 'What is your name, friend?'", "correct_sequence": ["Nama", "Anda / Kamu", "Apa", "Kawan"], "options": ["Nama", "Anda / Kamu", "Apa", "Kawan", "Siapa"]},
+                {"type": "Sequence", "text": "Sort to form: 'Welcome, family'", "correct_sequence": ["Selamat Datang", "Keluarga"], "options": ["Selamat Datang", "Keluarga", "Orang", "Selamat Jalan"]}
+            ]
+            
+            final_qs = []
+            
+            # Process Tier 1
+            for idx, q in enumerate(tier1):
+                distractors = random.sample([o for o in pool if o != q["target"]], 3)
+                options_text = distractors + [q["target"]]
+                random.shuffle(options_text)
+                
+                options_objs = []
+                for opt in options_text:
+                    options_objs.append({
+                        "text": opt,
+                        "media_url": SIGN_TO_MEDIA.get(opt, None)
+                    })
+                
+                final_qs.append({
+                    "id": idx + 1,
+                    "text": q["text"],
+                    "type": q["type"],
+                    "media_url": q["media_url"],
+                    "media_type": "image" if q["media_url"] else None,
+                    "options": options_objs,
+                    "hide_option_text": True if not q["media_url"] else False,
+                    "correct_option": q["target"],
+                    "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Mastery level question.")
+                })
+                
+            # Process Tier 2 & 3
+            word_building = tier2 + tier3
+            for idx, q in enumerate(word_building):
+                options_text = list(q["options"])
+                random.shuffle(options_text)
+                
+                options_objs = []
+                for opt in options_text:
+                    options_objs.append({
+                        "text": opt,
+                        "media_url": SIGN_TO_MEDIA.get(opt, None)
+                    })
+                
+                final_qs.append({
+                    "id": idx + 11,
+                    "text": q["text"],
+                    "type": q["type"],
+                    "media_url": None,
+                    "media_type": None,
+                    "options": options_objs,
+                    "hide_option_text": True,
+                    "correct_sequence": q["correct_sequence"],
+                    "correct_option": ",".join(q["correct_sequence"]),
+                    "hint": "Form the sentence by selecting signs in order."
+                })
+            return final_qs
+            
+        if lesson_id in TOPIC_3_DATA:
+            questions = TOPIC_3_DATA[lesson_id]
+            final_qs = []
+            for idx, q in enumerate(questions):
+                if q["type"] == "Sequence":
+                    options_text = list(q["options"])
+                    random.shuffle(options_text)
+                    options_objs = []
+                    for opt in options_text:
+                        options_objs.append({
+                            "text": opt,
+                            "media_url": SIGN_TO_MEDIA.get(opt, None)
+                        })
+                    final_qs.append({
+                        "id": idx + 1,
+                        "text": q["text"],
+                        "type": q["type"],
+                        "media_url": None,
+                        "media_type": None,
+                        "options": options_objs,
+                        "hide_option_text": True,
+                        "correct_sequence": q["correct_sequence"],
+                        "correct_option": ",".join(q["correct_sequence"]),
+                        "hint": "Click the images in the correct grammatical order."
+                    })
+                else:
+                    distractors = random.sample([o for o in pool if o != q["target"]], 3)
+                    options_text = distractors + [q["target"]]
+                    random.shuffle(options_text)
+                    
+                    options_objs = []
+                    for opt in options_text:
+                        options_objs.append({
+                            "text": opt,
+                            "media_url": SIGN_TO_MEDIA.get(opt, None)
+                        })
+                    
+                    final_qs.append({
+                        "id": idx + 1,
+                        "text": q["text"],
+                        "type": q["type"],
+                        "media_url": q["media_url"],
+                        "media_type": "image" if q["media_url"] else None,
+                        "options": options_objs,
+                        "hide_option_text": True if not q["media_url"] else False,
+                        "correct_option": q["target"],
+                        "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Topic 3 lesson content.")
+                    })
+            return final_qs
     return []
 
 def generate_generic_quiz():

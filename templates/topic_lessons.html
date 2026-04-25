@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1024">
     <title>Topic Lessons - SayBIM</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -61,6 +61,7 @@
         .shape-offset-5 { transform: translateX(-45px); }
         .shape-offset-6 { transform: translateX(-80px); }
         .shape-offset-7 { transform: translateX(-45px); }
+        .shape-offset-8 { transform: translateX(0px); }
 
         .lesson-icon-circle {
             width: 60px;
@@ -183,6 +184,16 @@
                 {"id": 8, "title": "Personal Introductions", "desc": "Structure 'My name is...' and 'I am...'"},
                 {"id": 9, "title": "Topic 2 Mastery", "desc": "3-minute challenge: The Ultimate Identity Quiz!"}
             ] %}
+        {% elif topic_id == 3 %}
+            {% set lessons = [
+                {"id": 18, "title": "The Core Family", "desc": "Learn signs for mother, father, and family"},
+                {"id": 19, "title": "The Siblings", "desc": "Identify brothers and sisters"},
+                {"id": 20, "title": "Generations", "desc": "Learn signs for grandparents and grandchildren"},
+                {"id": 21, "title": "Birth Order & Stages", "desc": "From the firstborn to adulthood"},
+                {"id": 22, "title": "Relative Circle", "desc": "Expand to uncles, aunts, and cousins"},
+                {"id": 23, "title": "Marriage & Friendship", "desc": "Learn signs for spouses and close friends"},
+                {"id": 24, "title": "FINAL MASTERY EXAM", "desc": "Topic 3 Mastery: Family & Relationships"}
+            ] %}
         {% else %}
             {% set lessons = [] %}
         {% endif %}
@@ -206,7 +217,7 @@
                 </div>
                 
                 <div class="lesson-info">
-                    <h3>Lesson {{ lesson.id }}: {{ lesson.title }}</h3>
+                    <h3>Lesson {% if topic_id == 3 %}{{ lesson.id - 17 }}{% else %}{{ lesson.id }}{% endif %}: {{ lesson.title }}</h3>
                     <p>{{ lesson.desc }}</p>
                 </div>
                 
