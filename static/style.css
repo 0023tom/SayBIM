@@ -244,14 +244,14 @@ body {
 
 .lesson-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 30px;
     padding-bottom: 50px;
 }
 
 .badge-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 25px;
     padding-bottom: 50px;
 }
@@ -318,7 +318,8 @@ body {
     height: 12px;
     border-radius: 6px;
     overflow: hidden;
-    margin-top: auto;
+    margin: 0;
+    position: relative;
 }
 
 .progress-bar-fill {
@@ -427,6 +428,34 @@ body {
     background: linear-gradient(to right, #667eea, #764ba2);
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 10px rgba(118, 75, 162, 0.3);
+}
+
+.power-up-btn {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-soft);
+    margin-top: 5px;
+}
+
+.power-up-btn:hover {
+    background: #e0f2fe;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(3, 105, 161, 0.12);
+}
+
+.power-up-btn i {
+    font-size: 1.1em;
+    color: #0ea5e9;
 }
 
 .quiz-options button:last-child:nth-child(odd) {
@@ -919,6 +948,9 @@ body {
     background: #ebf8ff;
     color: #2b6cb0;
     border: 1px solid #90cdf4;
+}
+
+#quiz-powerup-container {
 }
 
 #toast-container {
@@ -1493,7 +1525,171 @@ input:checked + .premium-slider:before {
     100% { transform: translateY(100vh) rotate(360deg) translateX(0); opacity: 0; }
 }
 
-/* Mobile Responsiveness for SayBIM */
+
+/* Quiz Header Layout Refinement */
+#quiz-header {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: 
+        "timer progress utils"
+        ". . powerups";
+    align-items: center;
+    margin-bottom: 30px;
+    width: 100%;
+    gap: 10px 15px;
+}
+
+#quiz-progress-group {
+    grid-area: progress;
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 600px;
+    max-width: 90%;
+}
+
+#quiz-progress-group .progress-bar-bg {
+    flex: 1;
+}
+
+#quiz-timer-container {
+    grid-area: timer;
+    justify-self: start;
+    display: none; /* Controlled by JS */
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent-red);
+    background: #fee2e2;
+    padding: 8px 18px;
+    border-radius: 20px;
+    min-width: 110px;
+    max-width: 110px;
+    justify-content: center;
+    border: 2px solid #FFD1D1;
+}
+
+#quiz-utils-bar {
+    grid-area: utils;
+    justify-self: end;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.quiz-counter {
+    font-size: 0.9em;
+    font-weight: 800;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.quiz-util-btn, .quiz-util-card {
+    background: #fdfdfd;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    font-size: 0.95em;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.quiz-util-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.quiz-util-btn i {
+    margin-right: 6px;
+}
+
+.hint-btn i {
+    color: #ffc107;
+}
+
+.quiz-util-card {
+    cursor: default;
+}
+
+.quiz-util-card i {
+    color: var(--accent-red);
+    margin-right: 6px;
+}
+
+.quiz-exit-btn {
+    background: #fee2e2;
+    color: #ef4444;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.quiz-exit-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: #fecaca;
+}
+
+#quiz-powerup-container {
+    grid-area: powerups;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 5px;
+    z-index: 1;
+}
+
+@media (max-width: 1024px) {
+    #quiz-header {
+        position: static !important;
+        display: grid !important;
+        grid-template-areas: 
+            "progress progress"
+            "timer utils"
+            ". powerups";
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 12px 15px !important;
+        margin-bottom: 20px !important;
+        width: 100% !important;
+    }
+
+    #quiz-progress-group {
+        grid-area: progress !important;
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #quiz-timer-container {
+        grid-area: timer !important;
+        justify-self: start !important;
+        min-width: 100px !important;
+        max-width: 100px !important;
+    }
+
+    #quiz-utils-bar {
+        grid-area: utils !important;
+        justify-self: end !important;
+    }
+}
 
 @media (max-width: 768px) {
     /* Global Adjustments */
@@ -1666,9 +1862,10 @@ input:checked + .premium-slider:before {
         text-align: center;
     }
 
-    .lesson-grid {
+    .lesson-grid, .badge-grid {
         grid-template-columns: 1fr !important;
         gap: 20px !important;
+        max-width: 100% !important;
     }
 
     /* Practice Page Responsiveness */
@@ -1785,44 +1982,80 @@ input:checked + .premium-slider:before {
         padding: 20px 16px !important;
     }
 
-    /* Quiz header: stack vertically on mobile */
+    /* Quiz header: grid layout for mobile/tablet */
     #quiz-header {
         position: static !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-        margin-bottom: 16px !important;
+        display: grid !important;
+        grid-template-areas: 
+            "progress progress"
+            "timer utils"
+            ". powerups" !important;
+        grid-template-columns: 1fr auto !important;
+        align-items: center !important;
+        gap: 12px 15px !important;
+        margin-bottom: 20px !important;
+        width: 100% !important;
+        padding: 0 !important;
     }
 
-    /* Progress bar: full width, no absolute positioning */
-    #quiz-header > div:first-child {
+    #quiz-progress-group {
+        grid-area: progress !important;
         position: static !important;
         transform: none !important;
         width: 100% !important;
         max-width: 100% !important;
-        order: 1;
+        justify-content: space-between !important;
     }
 
-    /* Timer: center it */
     #quiz-timer-container {
-        margin-right: 0 !important;
-        justify-content: center !important;
-        order: 2;
+        grid-area: timer !important;
+        justify-self: start !important;
+        margin: 0 !important;
+        min-width: 100px !important;
+        max-width: 100px !important;
+        font-size: 1rem !important;
+        padding: 6px 12px !important;
     }
 
-    /* Utils bar: row, centered */
     #quiz-utils-bar {
-        width: 100% !important;
-        justify-content: center !important;
-        order: 3;
+        grid-area: utils !important;
+        justify-self: end !important;
+        gap: 10px !important;
     }
 
-    /* Power-up row: static, not absolute */
-    #quiz-powerup-container {
+    /* Progress bar: span full width */
+    #quiz-header > div:first-child {
+        grid-area: progress;
         position: static !important;
-        justify-content: center !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Timer: on the left */
+    #quiz-timer-container {
+        grid-area: timer;
+        margin-right: 0 !important;
+        justify-content: flex-start !important;
+        padding: 5px 12px !important;
+        font-size: 1em !important;
+    }
+
+    /* Utils bar (Hint, Heart, Close): on the right */
+    #quiz-utils-bar {
+        grid-area: utils;
+        width: auto !important;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+    }
+
+    /* Power-up row: below utils on the right */
+    #quiz-powerup-container {
+        grid-area: powerups;
+        position: static !important;
+        justify-content: flex-end !important;
         margin-top: 0 !important;
-        order: 4;
+        gap: 8px !important;
     }
 
     /* Quiz image: smaller on mobile */

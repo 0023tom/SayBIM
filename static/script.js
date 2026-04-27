@@ -185,10 +185,15 @@ function showQuitConfirmation(message, onConfirm, onCancel) {
     container.appendChild(msg);
 }
 
+function isMasteryLesson() {
+    return (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
+           (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9) || 
+           (window.CURRENT_TOPIC_ID === 3 && window.CURRENT_LESSON_ID === 24) ||
+           (window.CURRENT_TOPIC_ID === 4 && window.CURRENT_LESSON_ID === 33);
+}
+
 function confirmExit(onConfirm) {
-    const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
-                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9) || 
-                      (window.CURRENT_TOPIC_ID === 3 && window.CURRENT_LESSON_ID === 24);
+    const isMastery = isMasteryLesson();
     
     if (isMastery) {
         pauseQuizTimer();
@@ -249,6 +254,7 @@ function renderLessonCards() {
     let t1Prog = gameState.topicProgress ? (gameState.topicProgress['1'] || 1) : 1;
     let t2Prog = gameState.topicProgress ? (gameState.topicProgress['2'] || 1) : 1;
     let t3Prog = gameState.topicProgress ? (gameState.topicProgress['3'] || 18) : 18;
+    let t4Prog = gameState.topicProgress ? (gameState.topicProgress['4'] || 26) : 26;
 
     let bar1 = document.getElementById('progress-bar-1');
     let card1 = document.getElementById('lesson-card-1');
@@ -333,6 +339,44 @@ function renderLessonCards() {
             icon3.style.color = 'var(--text-secondary)';
         }
         if (text3) text3.style.color = 'var(--text-secondary)';
+    }
+
+    // Topic 3 Unlocks Topic 4
+    let bar4 = document.getElementById('progress-bar-4');
+    let card4 = document.getElementById('lesson-card-4');
+    let icon4 = document.getElementById('lesson-icon-4');
+    let text4 = document.getElementById('lesson-text-4');
+    
+    if (bar4) {
+        if (t4Prog > 33) {
+            bar4.style.width = '100%';
+            bar4.style.background = 'var(--accent-green)';
+        } else {
+            bar4.style.width = `${((t4Prog - 26) / 8) * 100}%`;
+        }
+    }
+
+    let isT4Unlocked = t3Prog > 24;
+    if (isT4Unlocked) {
+        if (card4) {
+            card4.classList.remove('locked');
+            card4.style.pointerEvents = "auto";
+        }
+        if (icon4) {
+            icon4.className = 'fas fa-book-open';
+            icon4.style.color = 'var(--accent-blue)';
+        }
+        if (text4) text4.style.color = 'var(--accent-blue)';
+    } else {
+        if (card4) {
+            card4.classList.add('locked');
+            card4.style.pointerEvents = "none";
+        }
+        if (icon4) {
+            icon4.className = 'fas fa-lock';
+            icon4.style.color = 'var(--text-secondary)';
+        }
+        if (text4) text4.style.color = 'var(--text-secondary)';
     }
 }
 
@@ -553,9 +597,12 @@ async function initGame() {
         gameState.currentTopicId = window.CURRENT_TOPIC_ID;
         gameState.currentQuestionIndex = 0;
 
-        // Mastery Quizzes: Topic 1 (L8) or Topic 2 (L9)
-        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) || (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
-            if (gameState.currentTopicId === 3 && gameState.currentLessonId === 24) {
+        // Mastery Quizzes: Topic 1 (L8), Topic 2 (L9), Topic 3 (L24), Topic 4 (L33)
+        if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) || (gameState.currentTopicId === 3 && gameState.currentLessonId === 24) || (gameState.currentTopicId === 4 && gameState.currentLessonId === 33)) {
+            if (gameState.currentTopicId === 4 && gameState.currentLessonId === 33) {
+                currentRemainingTime = 300; // 5 minutes
+                document.getElementById('quiz-timer-display').innerText = '05:00';
+            } else if (gameState.currentTopicId === 3 && gameState.currentLessonId === 24) {
                 currentRemainingTime = 300;
                 document.getElementById('quiz-timer-display').innerText = '05:00';
             } else {
@@ -941,9 +988,7 @@ function updateQuizItems() {
     utilsBar.querySelectorAll('.quiz-item-btn').forEach(b => b.remove());
 
     // Add Timer Freeze button if Mastery Lesson and have count
-    const isMastery = (window.CURRENT_TOPIC_ID === 1 && window.CURRENT_LESSON_ID === 8) || 
-                      (window.CURRENT_TOPIC_ID === 2 && window.CURRENT_LESSON_ID === 9) || 
-                      (window.CURRENT_TOPIC_ID === 3 && window.CURRENT_LESSON_ID === 24);
+    const isMastery = isMasteryLesson();
     
     if (isMastery && gameState.timerFreezeCount > 0) {
         const powerupContainer = document.getElementById('quiz-powerup-container');
@@ -1402,7 +1447,7 @@ function refillHearts() {
                 if (gameState.currentQuestionIndex < gameState.totalQuestions) {
                     if (window.CURRENT_PAGE_TYPE !== 'quiz') {
                         document.getElementById('quiz-modal').classList.add('active');
-                    } else if (window.CURRENT_LESSON_ID === 8 && currentRemainingTime > 0) {
+                    } else if (isMasteryLesson() && currentRemainingTime > 0) {
                         startQuizTimer(); // Resume the timer
                     }
                     updateQuizUI();
@@ -1534,16 +1579,14 @@ function showQuizFeedback(isCorrect, userAnswer, correctAnswer, xpMessage = "") 
             if (isCorrect && badgeCelebrationQueue.length > 0) {
                 processBadgeQueue(() => {
                     nextQuestion();
-                    if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) ||
-                        (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) ||
-                        (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
+                    if (isMasteryLesson()) {
                         startQuizTimer();
                     }
                 });
             } else {
                 nextQuestion();
                 // Only resume timer for Mastery Review lessons
-                if ((gameState.currentTopicId === 1 && gameState.currentLessonId === 8) || (gameState.currentTopicId === 2 && gameState.currentLessonId === 9) || (gameState.currentTopicId === 3 && gameState.currentLessonId === 24)) {
+                if (isMasteryLesson()) {
                     startQuizTimer();
                 }
             }
@@ -1699,6 +1742,7 @@ const BADGE_DEFS = [
     { key: 'topic_1_complete', name: 'Topic 1 Master (Lessons 1-8)', emoji: '📘', description: 'Complete all lessons in Topic 1 (Greetings).', weekly: false },
     { key: 'topic_2_complete', name: 'Topic 2 Master (Lessons 1-9)', emoji: '📙', description: 'Complete all lessons in Topic 2 (Self-Identity).', weekly: false },
     { key: 'topic_3_complete', name: 'Topic 3 Master (Lessons 1-7)', emoji: '👨‍👩‍👧‍👦', description: 'Complete all 7 lessons in Topic 3 (Family & Relationships).', weekly: false },
+    { key: 'topic_4_complete', name: 'Topic 4 Master (Lessons 1-8)', emoji: '⌚', description: 'Complete all 8 lessons in Topic 4 (Time, Days & Numbers).', weekly: false },
     { key: 'weekly_top_1', name: 'Weekly Top 1', emoji: '🥇', description: 'Reach Rank 1 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_2', name: 'Weekly Top 2', emoji: '🥈', description: 'Reach Rank 2 on the weekly leaderboard.', weekly: true },
     { key: 'weekly_top_3', name: 'Weekly Top 3', emoji: '🥉', description: 'Reach Rank 3 on the weekly leaderboard.', weekly: true }

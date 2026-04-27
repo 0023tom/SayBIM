@@ -151,6 +151,10 @@
                 Topic 1: Basic Greetings
                 {% elif topic_id == 2 %}
                 Topic 2: Self-Identity & The Alphabet
+                {% elif topic_id == 3 %}
+                Topic 3: Family & Relationships
+                {% elif topic_id == 4 %}
+                Topic 4: Time, Days & Numbers
                 {% else %}
                 Topic {{ topic_id }}
                 {% endif %}
@@ -195,6 +199,17 @@
                 {"id": 23, "title": "Marriage & Friendship", "desc": "Learn signs for spouses and close friends"},
                 {"id": 24, "title": "Topic 3 Mastery", "desc": "Topic 3 Mastery: Family & Relationships"}
             ] %}
+        {% elif topic_id == 4 %}
+            {% set lessons = [
+                {"id": 26, "title": "Advanced Numbers", "desc": "11, 12, 13, 14, 15, 16, 17, 18, 19, 20"},
+                {"id": 27, "title": "Days of the Week (Part 1)", "desc": "Isnin, Selasa, Rabu, Khamis"},
+                {"id": 28, "title": "Days of the Week (Part 2)", "desc": "Jumaat, Sabtu, Ahad, Minggu"},
+                {"id": 29, "title": "The Horizon of Time", "desc": "Semalam, Hari Ini, Esok"},
+                {"id": 30, "title": "Time Units", "desc": "Jam/Pukul, Minit, Saat, Masa"},
+                {"id": 31, "title": "Frequency", "desc": "Selalu, Kadang-kadang, Pernah, Belum"},
+                {"id": 32, "title": "Daily Phases", "desc": "Pagi, Tengah Hari, Petang, Malam"},
+                {"id": 33, "title": "Mastery Challenge", "desc": "The 30-Question Final (Numbers + Days + Time Mix)"}
+            ] %}
         {% else %}
             {% set lessons = [] %}
         {% endif %}
@@ -218,7 +233,7 @@
                 </div>
                 
                 <div class="lesson-info">
-                    <h3>Lesson {% if topic_id == 3 %}{{ lesson.id - 17 }}{% else %}{{ lesson.id }}{% endif %}: {{ lesson.title }}</h3>
+                    <h3>Lesson {% if topic_id == 3 %}{{ lesson.id - 17 }}{% elif topic_id == 4 %}{{ lesson.id - 25 }}{% else %}{{ lesson.id }}{% endif %}: {{ lesson.title }}</h3>
                     <p>{{ lesson.desc }}</p>
                 </div>
                 

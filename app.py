@@ -69,6 +69,7 @@ BADGE_DEFS = {
     'topic_1_complete': {'label': 'Topic 1 Master (Lessons 1-8)', 'emoji': '📘', 'weekly': False},
     'topic_2_complete': {'label': 'Topic 2 Master (Lessons 1-9)', 'emoji': '📙', 'weekly': False},
     'topic_3_complete': {'label': 'Topic 3 Master (Lessons 1-7)', 'emoji': '👨‍👩‍👧‍👦', 'weekly': False},
+    'topic_4_complete': {'label': 'Topic 4 Master (Lessons 1-8)', 'emoji': '⌚', 'weekly': False},
     'weekly_top_1': {'label': 'Weekly Top 1', 'emoji': '🥇', 'weekly': True},
     'weekly_top_2': {'label': 'Weekly Top 2', 'emoji': '🥈', 'weekly': True},
     'weekly_top_3': {'label': 'Weekly Top 3', 'emoji': '🥉', 'weekly': True},
@@ -228,6 +229,9 @@ def check_badges(user):
     if progress_dict.get('3', 18) > 24 and award_badge_if_missing(user.id, 'topic_3_complete'):
         earned.append(BADGE_DEFS['topic_3_complete']['label'])
 
+    if progress_dict.get('4', 26) > 33 and award_badge_if_missing(user.id, 'topic_4_complete'):
+        earned.append(BADGE_DEFS['topic_4_complete']['label'])
+
     return earned
 
 @app.route('/')
@@ -250,7 +254,12 @@ def topic_page(topic_id):
     progress_dict = get_progress_dict(user)
     
     # Get highest unlocked lesson for this topic
-    default_lesson = 18 if topic_id == 3 else 1
+    if topic_id == 4:
+        default_lesson = 26
+    elif topic_id == 3:
+        default_lesson = 18
+    else:
+        default_lesson = 1
     highest_unlocked = progress_dict.get(str(topic_id), default_lesson)
     
     return render_template('topic_lessons.html', user=user, topic_id=topic_id, highest_unlocked=highest_unlocked)
@@ -712,7 +721,7 @@ def complete_lesson():
     check_and_reset_weekly_xp(user)
 
     if fully_completed:
-        is_mastery = (topic_id == '1' and lesson_id == 8) or (topic_id == '2' and lesson_id == 9) or (topic_id == '3' and lesson_id == 24)
+        is_mastery = (topic_id == '1' and lesson_id == 8) or (topic_id == '2' and lesson_id == 9) or (topic_id == '3' and lesson_id == 24) or (topic_id == '4' and lesson_id == 33)
         if is_mastery:
             xp_reward = 200
             diamond_reward = 100

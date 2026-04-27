@@ -98,7 +98,42 @@ SIGN_TO_MEDIA = {
     "Perempuan": get_media_url("female.jpg", "lesson3"),
     "Suami": get_media_url("husband.jpg", "lesson3"),
     "Isteri": get_media_url("wife.jpg", "lesson3"),
-    "Kawan Rapat": get_media_url("close_friend.jpg", "lesson3")
+    "Kawan Rapat": get_media_url("close_friend.jpg", "lesson3"),
+    # Topic 4 -> lesson4 folder
+    "11": get_media_url("eleven.jpg", "lesson4"),
+    "12": get_media_url("twelve.jpg", "lesson4"),
+    "13": get_media_url("thirteen.jpg", "lesson4"),
+    "14": get_media_url("fourteen.jpg", "lesson4"),
+    "15": get_media_url("fifteen.jpg", "lesson4"),
+    "16": get_media_url("sixteen.jpg", "lesson4"),
+    "17": get_media_url("seventeen.jpg", "lesson4"),
+    "18": get_media_url("eighteen.jpg", "lesson4"),
+    "19": get_media_url("nineteen.jpg", "lesson4"),
+    "20": get_media_url("twenty.jpg", "lesson4"),
+    "Isnin": get_media_url("monday.jpg", "lesson4"),
+    "Selasa": get_media_url("tuesday.jpg", "lesson4"),
+    "Rabu": get_media_url("wednesday.jpg", "lesson4"),
+    "Khamis": get_media_url("thursday.jpg", "lesson4"),
+    "Jumaat": get_media_url("friday.jpg", "lesson4"),
+    "Sabtu": get_media_url("saturday.jpg", "lesson4"),
+    "Ahad": get_media_url("sunday.jpg", "lesson4"),
+    "Minggu": get_media_url("week.jpg", "lesson4"),
+    "Semalam": get_media_url("yesterday.jpg", "lesson4"),
+    "Hari Ini": get_media_url("today.jpg", "lesson4"),
+    "Esok": get_media_url("tomorrow.jpg", "lesson4"),
+    "Jam/Pukul": get_media_url("hour.jpg", "lesson4"),
+    "Minit": get_media_url("minute.jpg", "lesson4"),
+    "Saat": get_media_url("second.jpg", "lesson4"),
+    "Masa": get_media_url("time.jpg", "lesson4"),
+    "Selalu": get_media_url("always.jpg", "lesson4"),
+    "Kadang-kadang": get_media_url("sometimes.jpg", "lesson4"),
+    "Pernah": get_media_url("ever.jpg", "lesson4"),
+    "Belum": get_media_url("not_yet.jpg", "lesson4"),
+    "Pagi": get_media_url("morning.jpg", "lesson4"),
+    "Tengah Hari": get_media_url("noon.jpg", "lesson4"),
+    "Petang": get_media_url("afternoon.jpg", "lesson4"),
+    "Malam": get_media_url("night.jpg", "lesson4"),
+    "Sekarang": get_media_url("now.jpg", "lesson4")
 }
 
 SIGN_HINTS = {
@@ -206,32 +241,63 @@ SIGN_HINTS = {
     "1": {"conceptual": "Number one.", "action": "Index finger pointed up."},
     "7": {"conceptual": "Number seven.", "action": "Thumb and ring finger touching."},
     # Topic 3 Hints
-    "Keluarga": {"conceptual": "Both hands form a 'C' shape and move in a circular motion to meet.", "action": ""},
-    "Ayah": {"conceptual": "The thumb of an open hand taps the forehead (representing the 'cap' or male head).", "action": ""},
-    "Ibu": {"conceptual": "The thumb of an open hand taps the chin/jawline (representing the 'veil' or female face).", "action": ""},
-    "Orang": {"conceptual": "The index finger points downward or moves in a slight vertical line.", "action": ""},
-    "Abang": {"conceptual": "Hand at the forehead (Male) + an upward motion (Older).", "action": ""},
-    "Kakak": {"conceptual": "Hand at the chin (Female) + an upward motion (Older).", "action": ""},
-    "Adik Lelaki": {"conceptual": "Hand at the forehead (Male) + a downward motion (Younger).", "action": ""},
-    "Adik Perempuan": {"conceptual": "Hand at the chin (Female) + a downward motion (Younger).", "action": ""},
-    "Datuk": {"conceptual": "Similar to 'Ayah' but with a 'bent' finger or a double tap to show age.", "action": ""},
-    "Nenek": {"conceptual": "Similar to 'Ibu' but with a 'bent' finger or a double tap to show age.", "action": ""},
-    "Cucu": {"conceptual": "Fingers spelling 'C-C' or a hand motion indicating a small person height.", "action": ""},
-    "Bayi": {"conceptual": "Arms crossed in front of the chest as if cradling/rocking a baby.", "action": ""},
-    "Anak Sulung": {"conceptual": "Pointing to the thumb or the 'top' of a list (The first).", "action": ""},
-    "Anak Bongsu": {"conceptual": "Pointing to the pinky finger (The last/smallest).", "action": ""},
-    "Kanak-kanak": {"conceptual": "Patting motions at a low height (as if patting children's heads).", "action": ""},
-    "Dewasa": {"conceptual": "Hand moving from a low height to a high height (Growing up).", "action": ""},
-    "Pakcik": {"conceptual": "The 'P' handshape placed near the forehead/temple.", "action": ""},
-    "Makcik": {"conceptual": "The 'M' handshape placed near the jaw/chin.", "action": ""},
-    "Sepupu": {"conceptual": "The 'S' handshape moving in a slight circle or side-to-side.", "action": ""},
-    "Saudara": {"conceptual": "Two index fingers meeting or a 'hooking' motion showing a link.", "action": ""},
-    "Lelaki": {"conceptual": "Hand near the forehead/cap area.", "action": ""},
-    "Perempuan": {"conceptual": "Hand tracing the jawline.", "action": ""},
-    "Suami": {"conceptual": "Sign for 'Lelaki' (Male) followed by the 'Marriage/Ring' sign.", "action": ""},
-    "Isteri": {"conceptual": "Sign for 'Perempuan' (Female) followed by the 'Marriage/Ring' sign.", "action": ""},
-    "Kawan Rapat": {"conceptual": "Two index fingers pressed tightly together (showing 'closeness').", "action": ""},
-    "Kawan": {"conceptual": "Two hands clasping or shaking each other once.", "action": ""}
+    "Keluarga": {"conceptual": "Both hands form a 'C' shape and move in a circular motion to meet.", "action": "Form 'C' shapes with both hands and draw a horizontal circle in front of the chest until the fingertips touch."},
+    "Ayah": {"conceptual": "The thumb of an open hand taps the forehead (representing the 'cap' or male head).", "action": "Extend the thumb of an open hand and tap it twice against the center of the forehead."},
+    "Ibu": {"conceptual": "The thumb of an open hand taps the chin/jawline (representing the 'veil' or female face).", "action": "Extend the thumb of an open hand and tap it twice against the side of the chin or jawline."},
+    "Orang": {"conceptual": "The index finger points downward or moves in a slight vertical line.", "action": "Point the index finger downward and move it in a short, straight vertical motion."},
+    "Abang": {"conceptual": "Hand at the forehead (Male) + an upward motion (Older).", "action": "Tap the forehead with the thumb, then move the hand upward to indicate seniority."},
+    "Kakak": {"conceptual": "Hand at the chin (Female) + an upward motion (Older).", "action": "Tap the chin with the thumb, then move the hand upward to indicate seniority."},
+    "Adik Lelaki": {"conceptual": "Hand at the forehead (Male) + a downward motion (Younger).", "action": "Tap the forehead with the thumb, then move the hand downward to indicate a younger sibling."},
+    "Adik Perempuan": {"conceptual": "Hand at the chin (Female) + a downward motion (Younger).", "action": "Tap the chin with the thumb, then move the hand downward to indicate a younger sibling."},
+    "Datuk": {"conceptual": "Similar to 'Ayah' but with a 'bent' finger or a double tap to show age.", "action": "Form a 'hooked' index finger near the forehead and tap twice to indicate an elder male."},
+    "Nenek": {"conceptual": "Similar to 'Ibu' but with a 'bent' finger or a double tap to show age.", "action": "Form a 'hooked' index finger near the chin and tap twice to indicate an elder female."},
+    "Cucu": {"conceptual": "Fingers spelling 'C-C' or a hand motion indicating a small person height.", "action": "Fingerspell the letter 'C' twice or move a flat hand downward to a child's height."},
+    "Bayi": {"conceptual": "Arms crossed in front of the chest as if cradling/rocking a baby.", "action": "Fold arms across the chest and rock them side-to-side as if holding an infant."},
+    "Anak Sulung": {"conceptual": "Pointing to the thumb or the 'top' of a list (The first).", "action": "Hold up one hand and use the other index finger to point specifically at the thumb."},
+    "Anak Bongsu": {"conceptual": "Pointing to the pinky finger (The last/smallest).", "action": "Hold up one hand and use the other index finger to point specifically at the pinky finger."},
+    "Kanak-kanak": {"conceptual": "Patting motions at a low height (as if patting children's heads).", "action": "Move the flat hand in several downward 'patting' motions at waist height."},
+    "Dewasa": {"conceptual": "Hand moving from a low height to a high height (Growing up).", "action": "Start with a flat hand at waist height and move it steadily upward above the shoulder."},
+    "Pakcik": {"conceptual": "The 'P' handshape placed near the forehead/temple.", "action": "Form the letter 'P' and tap the thumb-side against the side of the forehead."},
+    "Makcik": {"conceptual": "The 'M' handshape placed near the jaw/chin.", "action": "Form the letter 'M' and tap the fingertips against the side of the jaw."},
+    "Sepupu": {"conceptual": "The 'S' handshape moving in a slight circle or side-to-side.", "action": "Form the letter 'S' and move the fist in a small circular or shaking motion."},
+    "Saudara": {"conceptual": "Two index fingers meeting or a 'hooking' motion showing a link.", "action": "Bring both index fingers together so they touch or hook around each other."},
+    "Lelaki": {"conceptual": "Hand near the forehead/cap area.", "action": "Touch the thumb to the forehead with fingers spread or closed to indicate a male."},
+    "Perempuan": {"conceptual": "Hand tracing the jawline.", "action": "Brush the back of the thumb or index finger along the jawline from ear to chin."},
+    "Suami": {"conceptual": "Sign for 'Lelaki' (Male) followed by the 'Marriage/Ring' sign.", "action": "Perform the male forehead sign, then touch the ring finger of the left hand."},
+    "Isteri": {"conceptual": "Sign for 'Perempuan' (Female) followed by the 'Marriage/Ring' sign.", "action": "Perform the female chin sign, then touch the ring finger of the left hand."},
+    "Kawan Rapat": {"conceptual": "Two index fingers pressed tightly together (showing 'closeness').", "action": "Hold both index fingers vertically and press them tightly against each other side-by-side."},
+    "Kawan": {"conceptual": "Two hands clasping or shaking each other once.", "action": "Clasp your own hands together or mimic a single firm handshake motion."},
+
+    # Topic 4 Hints
+    "11": {"conceptual": "Number 11.", "action": "Index finger flicks upward from behind the thumb twice."},
+    "12": {"conceptual": "Flicking motion of the thumb and fingers.", "action": "Index and middle fingers flick upward together from behind the thumb."},
+    "15": {"conceptual": "Number 15.", "action": "All four fingers (except thumb) flick upward or 'beckon' towards the palm."},
+    "17": {"conceptual": "Number 17.", "action": "Thumb and middle finger touch and then snap/flick outward."},  
+    "20": {"conceptual": "Two fingers + Zero shape.", "action": "Hand forms an 'L' shape (2) then snaps the index and thumb together to form a '0'."},
+    "Isnin": {"conceptual": "Monday.", "action": "Hand forms an 'I' shape and moves in a small circular motion."},
+    "Selasa": {"conceptual": "Tuesday.", "action": "Hand forms an 'S' shape and moves in a small circular motion."},
+    "Rabu": {"conceptual": "Wednesday.", "action": "Hand forms an 'R' shape and moves in a small circular motion."},
+    "Khamis": {"conceptual": "Thursday.", "action": "Hand forms a 'K' shape and moves in a small circular motion."},
+    "Jumaat": {"conceptual": "Look for the 'J' motion.", "action": "The pinky finger draws the shape of the letter 'J' in the air."},
+    "Sabtu": {"conceptual": "Saturday.", "action": "Hand forms an 'S' shape and remains stationary or rotates slightly."},
+    "Ahad": {"conceptual": "Look for the circular motion.", "action": "Index finger points up and draws a circle in the air."},
+    "Minggu": {"conceptual": "Week.", "action": "Index finger moves horizontally across the flat palm of the other hand."},
+    "Semalam": {"conceptual": "Hand moves backward to indicate the past.", "action": "The thumb points backward over the shoulder."},
+    "Hari Ini": {"conceptual": "Hand points down/central to indicate now.", "action": "Both hands move downward simultaneously in front of the body."},    
+    "Esok": {"conceptual": "Hand moves forward to indicate the future.", "action": "Index finger moves in a forward arching motion from the cheek."},
+    "Jam/Pukul": {"conceptual": "Points to the wrist like a watch.", "action": "Index finger of the dominant hand taps the back of the opposite wrist."},
+    "Minit": {"conceptual": "Minutes.", "action": "Index finger taps the palm or makes a small 'tick' movement on a clock face."},
+    "Saat": {"conceptual": "Seconds.", "action": "Index finger makes a very quick, sharp flicking or ticking motion."},    
+    "Masa": {"conceptual": "Time.", "action": "Hands open out or index finger circles an imaginary clock area in the air."},
+    "Selalu": {"conceptual": "A repeating motion usually indicates always.", "action": "Index finger rotates in a continuous, fast forward circular motion."},
+    "Kadang-kadang": {"conceptual": "Sometimes.", "action": "The hand with palm facing up rocks side-to-side in a 'maybe' motion."},
+    "Pernah": {"conceptual": "Have experienced/done something.", "action": "Hand moves from the chin or chest forward in a single, decisive flick."},
+    "Belum": {"conceptual": "Not yet.", "action": "Hand with palm facing back shakes side-to-side near the shoulder (like saying 'no')."},
+    "Pagi": {"conceptual": "Morning, sun is rising.", "action": "One hand/arm rises upward from a horizontal position (sun rising)."},
+    "Tengah Hari": {"conceptual": "Noon, sun is overhead.", "action": "Elbow is supported by the other hand while the arm points straight up."},
+    "Petang": {"conceptual": "Afternoon, sun is setting.", "action": "Arm starts at an angle and moves downward (sun setting)."},
+    "Malam": {"conceptual": "Nighttime.", "action": "One hand arches over the other or both hands move down and cross over each other."},
+    "Sekarang": {"conceptual": "Now.", "action": "Both hands move downward in front of the body."}
 }
 
 # Data structure mapping Topic 1 -> Lessons 1 to 8
@@ -771,6 +837,103 @@ TOPIC_2_POOL = [
     "Saya", "Anda / Kamu", "Dia", "Nama", "Tinggal", "Apa", "Siapa", "Mana"
 ]
 
+TOPIC_4_DATA = {
+    26: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "11", "media_url": SIGN_TO_MEDIA["11"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "15", "media_url": SIGN_TO_MEDIA["15"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "20", "media_url": SIGN_TO_MEDIA["20"]},
+        {"type": "Logic", "text": "Which sign is for '12'?", "target": "12", "media_url": None},
+        {"type": "Logic", "text": "Which sign is for '20'?", "target": "20", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: '11 and 12'", "correct_sequence": ["11", "12"], "options": ["11", "12", "13", "10"]},
+        {"type": "Sequence", "text": "Sort to form: '13 Children'", "correct_sequence": ["13", "Kanak-kanak"], "options": ["Kanak-kanak", "13", "Dewasa", "15"]},
+        {"type": "Sequence", "text": "Sort to form: 'My brother is 15'", "correct_sequence": ["Abang", "Saya", "15"], "options": ["Abang", "Saya", "15", "Kakak", "12"]},
+        {"type": "Sequence", "text": "Sort to form: 'He has 11 relatives'", "correct_sequence": ["Dia", "11", "Saudara"], "options": ["Dia", "Saudara", "11", "Kawan", "14"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "17", "media_url": SIGN_TO_MEDIA["17"]}
+    ],
+    27: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Isnin", "media_url": SIGN_TO_MEDIA["Isnin"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Selasa", "media_url": SIGN_TO_MEDIA["Selasa"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Rabu", "media_url": SIGN_TO_MEDIA["Rabu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Khamis", "media_url": SIGN_TO_MEDIA["Khamis"]},
+        {"type": "Logic", "text": "Which day comes after Selasa?", "target": "Rabu", "media_url": None},
+        {"type": "Logic", "text": "Which day comes before Selasa?", "target": "Isnin", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Today is Monday'", "correct_sequence": ["Hari Ini", "Isnin"], "options": ["Hari Ini", "Isnin", "Esok", "Selasa"]},
+        {"type": "Sequence", "text": "Sort to form: 'Thursday is a week'", "correct_sequence": ["Khamis", "Minggu"], "options": ["Khamis", "Minggu", "Selasa", "Masa"]},
+        {"type": "Sequence", "text": "Sort to form: 'Tomorrow is Tuesday'", "correct_sequence": ["Esok", "Selasa"], "options": ["Esok", "Selasa", "Hari Ini", "Isnin"]},
+        {"type": "Sequence", "text": "Sort to form: 'Yesterday was Wednesday'", "correct_sequence": ["Semalam", "Rabu"], "options": ["Semalam", "Rabu", "Esok", "Khamis"]}
+    ],
+    28: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Jumaat", "media_url": SIGN_TO_MEDIA["Jumaat"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Sabtu", "media_url": SIGN_TO_MEDIA["Sabtu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Ahad", "media_url": SIGN_TO_MEDIA["Ahad"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Minggu", "media_url": SIGN_TO_MEDIA["Minggu"]},
+        {"type": "Logic", "text": "Identify the sign for 'Minggu' (Week)", "target": "Minggu", "media_url": None},
+        {"type": "Context", "text": "Which day is the weekend in Malaysia?", "target": "Ahad", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Next Friday'", "correct_sequence": ["Jumaat", "Esok"], "options": ["Jumaat", "Esok", "Semalam", "Sabtu"]},
+        {"type": "Sequence", "text": "Sort to form: 'Today is Sunday'", "correct_sequence": ["Hari Ini", "Ahad"], "options": ["Hari Ini", "Ahad", "Jumaat", "Esok"]},
+        {"type": "Sequence", "text": "Sort to form: 'Today is Friday'", "correct_sequence": ["Hari Ini", "Jumaat"], "options": ["Hari Ini", "Jumaat", "Esok", "Sabtu"]},
+        {"type": "Sequence", "text": "Sort to form: 'Yesterday was Saturday'", "correct_sequence": ["Semalam", "Sabtu"], "options": ["Semalam", "Sabtu", "Hari Ini", "Minggu"]}
+    ],
+    29: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Semalam", "media_url": SIGN_TO_MEDIA["Semalam"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Hari Ini", "media_url": SIGN_TO_MEDIA["Hari Ini"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Esok", "media_url": SIGN_TO_MEDIA["Esok"]},
+        {"type": "Logic", "text": "If today is Tuesday, what was yesterday?", "target": "Isnin", "media_url": None},
+        {"type": "Logic", "text": "'Esok' means...?", "target": "Esok", "media_url": None},
+        {"type": "Logic", "text": "Contrast 'Semalam' vs 'Esok'. Hand moves backward for...", "target": "Semalam", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Tomorrow is Monday'", "correct_sequence": ["Esok", "Isnin"], "options": ["Esok", "Isnin", "Hari Ini", "Selasa"]},
+        {"type": "Sequence", "text": "Sort to form: 'Yesterday was Saturday'", "correct_sequence": ["Semalam", "Sabtu"], "options": ["Semalam", "Sabtu", "Esok", "Minggu"]},
+        {"type": "Sequence", "text": "Sort to form: 'Tomorrow is Friday'", "correct_sequence": ["Esok", "Jumaat"], "options": ["Esok", "Jumaat", "Semalam", "Sabtu"]},
+        {"type": "Sequence", "text": "Sort to form: 'Today is Sunday'", "correct_sequence": ["Hari Ini", "Ahad"], "options": ["Hari Ini", "Ahad", "Esok", "Sabtu", "Masa"]}
+    ],
+    30: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Jam/Pukul", "media_url": SIGN_TO_MEDIA["Jam/Pukul"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Minit", "media_url": SIGN_TO_MEDIA["Minit"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Masa", "media_url": SIGN_TO_MEDIA["Masa"]},
+        {"type": "Logic", "text": "Which one is for time?", "target": "Jam/Pukul", "media_url": None},
+        {"type": "Logic", "text": "'Saat' refers to...?", "target": "Saat", "media_url": None},
+        {"type": "Context", "text": "Asking for the time usually involves...?", "target": "Jam/Pukul", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: '11 o'clock'", "correct_sequence": ["Jam/Pukul", "11"], "options": ["Jam/Pukul", "11", "Masa", "12"]},
+        {"type": "Sequence", "text": "Sort to form: '10 minutes'", "correct_sequence": ["10", "Minit"], "options": ["10", "Minit", "11", "Saat"]},
+        {"type": "Sequence", "text": "Sort to form: 'The time is now'", "correct_sequence": ["Masa", "Sekarang"], "options": ["Masa", "Sekarang", "Jam/Pukul", "Esok"]},
+        {"type": "Sequence", "text": "Sort to form: '12 o'clock tomorrow'", "correct_sequence": ["Esok", "Jam/Pukul", "12"], "options": ["Esok", "Jam/Pukul", "12", "Masa", "Hari Ini"]}
+    ],
+    31: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Selalu", "media_url": SIGN_TO_MEDIA["Selalu"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Kadang-kadang", "media_url": SIGN_TO_MEDIA["Kadang-kadang"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Belum", "media_url": SIGN_TO_MEDIA["Belum"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Pernah", "media_url": SIGN_TO_MEDIA["Pernah"]},
+        {"type": "Logic", "text": "'Not yet' in BIM is...?", "target": "Belum", "media_url": None},
+        {"type": "Logic", "text": "A repeating motion usually indicates...?", "target": "Selalu", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Always today'", "correct_sequence": ["Selalu", "Hari Ini"], "options": ["Selalu", "Hari Ini", "Kadang-kadang", "Semalam"]},
+        {"type": "Sequence", "text": "Sort to form: 'Not yet time'", "correct_sequence": ["Belum", "Masa"], "options": ["Belum", "Masa", "Pernah", "Sekarang"]},
+        {"type": "Sequence", "text": "Sort to form: 'Sometimes yesterday'", "correct_sequence": ["Kadang-kadang", "Semalam"], "options": ["Kadang-kadang", "Semalam", "Selalu", "Hari Ini"]},
+        {"type": "Sequence", "text": "Sort to form: 'Ever on Sunday?'", "correct_sequence": ["Pernah", "Ahad"], "options": ["Pernah", "Ahad", "Belum", "Sabtu"]}
+    ],
+    32: [
+        {"type": "Visual", "text": "Identify this sign:", "target": "Pagi", "media_url": SIGN_TO_MEDIA["Pagi"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Malam", "media_url": SIGN_TO_MEDIA["Malam"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Petang", "media_url": SIGN_TO_MEDIA["Petang"]},
+        {"type": "Visual", "text": "Identify this sign:", "target": "Tengah Hari", "media_url": SIGN_TO_MEDIA["Tengah Hari"]},
+        {"type": "Logic", "text": "Sun is overhead:", "target": "Tengah Hari", "media_url": None},
+        {"type": "Logic", "text": "Sun is setting:", "target": "Petang", "media_url": None},
+        {"type": "Sequence", "text": "Sort to form: 'Tomorrow morning'", "correct_sequence": ["Esok", "Pagi"], "options": ["Esok", "Pagi", "Semalam", "Malam"]},
+        {"type": "Sequence", "text": "Sort to form: 'Tonight'", "correct_sequence": ["Malam", "Hari Ini"], "options": ["Malam", "Hari Ini", "Petang", "Esok"]},
+        {"type": "Sequence", "text": "Sort to form: 'Good night'", "correct_sequence": ["Selamat", "Malam"], "options": ["Selamat", "Malam", "Pagi", "Petang"]},
+        {"type": "Sequence", "text": "Sort to form: '2pm in the afternoon'", "correct_sequence": ["Jam/Pukul", "2", "Petang"], "options": ["Jam/Pukul", "2", "Petang", "Malam", "Pagi"]}
+    ]
+}
+
+TOPIC_4_POOL = [
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+    "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu", "Ahad", "Minggu",
+    "Semalam", "Hari Ini", "Esok", "Jam/Pukul", "Minit", "Saat", "Masa",
+    "Selalu", "Kadang-kadang", "Pernah", "Belum",
+    "Pagi", "Tengah Hari", "Petang", "Malam",
+    "Saya", "Dia", "Kanak-kanak", "Abang", "Saudara", "Sekarang",
+    "11", "12", "10", "5", "Ahad", "Selamat"
+]
+
 def generate_topic_quiz(topic_id, lesson_id):
     if topic_id == 1:
         pool = TOPIC_1_POOL
@@ -1097,9 +1260,128 @@ def generate_topic_quiz(topic_id, lesson_id):
                         "options": options_objs,
                         "hide_option_text": True if not q["media_url"] else False,
                         "correct_option": q["target"],
-                        "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Topic 3 lesson content.")
                     })
             return final_qs
+            
+    # Topic 4 Logic
+    if topic_id == 4:
+        pool = TOPIC_4_POOL
+        if lesson_id == 33: # Final Mastery Challenge
+            all_questions = []
+            for l_id in range(26, 33):
+                all_questions.extend(TOPIC_4_DATA[l_id])
+            
+            visual_logic_qs = [q for q in all_questions if q['type'] in ['Visual', 'Logic', 'Context']]
+            seq_qs = [q for q in all_questions if q['type'] == 'Sequence']
+            
+            # Aim for 30 questions total (e.g. 20 visual/logic, 10 sequence)
+            selected_vl = random.sample(visual_logic_qs, min(20, len(visual_logic_qs)))
+            selected_seq = random.sample(seq_qs, min(10, len(seq_qs)))
+            
+            final_qs = []
+            
+            # Process Visual/Logic
+            for idx, q in enumerate(selected_vl):
+                distractors = random.sample([o for o in pool if o != q["target"]], 3)
+                options_text = distractors + [q["target"]]
+                random.shuffle(options_text)
+                
+                options_objs = []
+                for opt in options_text:
+                    options_objs.append({
+                        "text": opt,
+                        "media_url": SIGN_TO_MEDIA.get(opt, None)
+                    })
+                
+                final_qs.append({
+                    "id": idx + 1,
+                    "text": q["text"],
+                    "type": q["type"],
+                    "media_url": q.get("media_url"),
+                    "media_type": "image" if q.get("media_url") else None,
+                    "options": options_objs,
+                    "hide_option_text": True if not q.get("media_url") else False,
+                    "correct_option": q["target"],
+                    "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Topic 4 Mastery Question.")
+                })
+                
+            # Process Sequencing
+            start_id = len(final_qs) + 1
+            for idx, q in enumerate(selected_seq):
+                options_text = list(q["options"])
+                random.shuffle(options_text)
+                
+                options_objs = []
+                for opt in options_text:
+                    options_objs.append({
+                        "text": opt,
+                        "media_url": SIGN_TO_MEDIA.get(opt, None)
+                    })
+                
+                final_qs.append({
+                    "id": start_id + idx,
+                    "text": q["text"],
+                    "type": q["type"],
+                    "media_url": None,
+                    "media_type": None,
+                    "options": options_objs,
+                    "hide_option_text": True,
+                    "correct_sequence": q["correct_sequence"],
+                    "correct_option": ",".join(q["correct_sequence"]),
+                    "hint": "Form the sentence by selecting signs in order."
+                })
+            return final_qs
+            
+        if lesson_id in TOPIC_4_DATA:
+            questions = TOPIC_4_DATA[lesson_id]
+            final_qs = []
+            for idx, q in enumerate(questions):
+                if q["type"] == "Sequence":
+                    options_text = list(q["options"])
+                    random.shuffle(options_text)
+                    options_objs = []
+                    for opt in options_text:
+                        options_objs.append({
+                            "text": opt,
+                            "media_url": SIGN_TO_MEDIA.get(opt, None)
+                        })
+                    final_qs.append({
+                        "id": idx + 1,
+                        "text": q["text"],
+                        "type": q["type"],
+                        "media_url": None,
+                        "media_type": None,
+                        "options": options_objs,
+                        "hide_option_text": True,
+                        "correct_sequence": q["correct_sequence"],
+                        "correct_option": ",".join(q["correct_sequence"]),
+                        "hint": "Click the images in the correct grammatical order."
+                    })
+                else:
+                    distractors = random.sample([o for o in pool if o != q["target"]], 3)
+                    options_text = distractors + [q["target"]]
+                    random.shuffle(options_text)
+                    
+                    options_objs = []
+                    for opt in options_text:
+                        options_objs.append({
+                            "text": opt,
+                            "media_url": SIGN_TO_MEDIA.get(opt, None)
+                        })
+                    
+                    final_qs.append({
+                        "id": idx + 1,
+                        "text": q["text"],
+                        "type": q["type"],
+                        "media_url": q.get("media_url"),
+                        "media_type": "image" if q.get("media_url") else None,
+                        "options": options_objs,
+                        "hide_option_text": True if not q.get("media_url") else False,
+                        "correct_option": q["target"],
+                        "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Topic 4 lesson content.")
+                    })
+            return final_qs
+
     return []
 
 def generate_generic_quiz():
