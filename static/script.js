@@ -1390,6 +1390,11 @@ function nextQuestion() {
                 updateGameState(data);
 
                 if (window.CURRENT_PAGE_TYPE === 'quiz') {
+                    // Tutorial Logic: If completing first lesson, move to shop phase
+                    if (localStorage.getItem('saybim_tutorial_active') === 'true') {
+                        localStorage.setItem('saybim_tutorial_step', 'home_shop');
+                    }
+
                     showFloatMessage(data.message || "Lesson Completed! +50 XP", 'success', () => {
                         // Process any earned badges AFTER the toast is dismissed
                         if (badgeCelebrationQueue.length > 0) {
@@ -2202,8 +2207,16 @@ function handleCorrectAnswer(action) {
 
     playSound('correct');
     
-    // Provide immediate feedback for a snappier experience (message removed as per user request)
-    // showFloatMessage("Correct! Well done.", "success");
+    // During tutorial, if the user gets the sign right, clear the tooltip immediately
+    // so it doesn't block the "Learned!" message or Badge modal.
+    if (localStorage.getItem('saybim_tutorial_active') === 'true' && window.CURRENT_PAGE_TYPE === 'practice') {
+        if (window.driverObj && typeof window.driverObj.destroy === 'function') {
+            // Use a small delay to ensure detection is acknowledged before UI shifts
+            window.isProgrammatic = true;
+            window.driverObj.destroy();
+            window.isProgrammatic = false;
+        }
+    }
 
     // Notify Backend (XP and backend rewards handled here)
     fetch('/api/practice/complete', {
@@ -2216,6 +2229,10 @@ function handleCorrectAnswer(action) {
             showFloatMessage(data.message, 'success', () => {
                 if (window.CURRENT_PAGE_TYPE === 'practice') {
                     resetPracticeUI();
+                    // Tutorial: Show the back button guidance ONLY after user clicks OK on the success prompt
+                    if (typeof window.showBackTutorial === 'function') {
+                        window.showBackTutorial();
+                    }
                 }
                 processBadgeQueue();
             });
@@ -2223,6 +2240,10 @@ function handleCorrectAnswer(action) {
             if (window.CURRENT_PAGE_TYPE === 'practice') {
                 showFloatMessage("Correct! Well done.", 'success', () => {
                     resetPracticeUI();
+                    // Tutorial: Show the back button guidance
+                    if (typeof window.showBackTutorial === 'function') {
+                        window.showBackTutorial();
+                    }
                     processBadgeQueue();
                 });
             } else {

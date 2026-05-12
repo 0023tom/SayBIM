@@ -14,6 +14,7 @@
     <script defer src="/_vercel/insights/script.js"></script>
 
     <!-- MediaPipe - Only needed scripts for standard UI if any (currently none) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
 </head>
 
 <body class="dashboard-body">
@@ -664,9 +665,11 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+    <script src="{{ url_for('static', filename='tutorial.js') }}"></script>
  
     <!-- Badge Celebration Modal -->
-    <div id="badge-celebration-modal" class="modal-overlay" style="z-index: 2000;">
+    <div id="badge-celebration-modal" class="modal-overlay" style="z-index: 200000;">
         <div class="modal-content celebration-card" style="max-width: 450px; overflow: visible;">
             <div id="confetti-container"></div>
             

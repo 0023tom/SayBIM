@@ -29,12 +29,38 @@ db.init_app(app)
 
 # Firebase Setup
 from firebase_config import db_firestore
+from firebase_admin import auth as firebase_auth
 # Use Firestore if it is initialized, else fallback to SQL
 # This allows the app to still run while the user sets up Firebase
 USE_FIREBASE = db_firestore is not None
 
 from data_manager import DataManager, UserWrapper, USE_FIREBASE
 from quiz_data import generate_topic_quiz
+ 
+# Firebase Web Configuration (Passed to frontend)
+def load_firebase_web_config():
+    # Try local JSON file first
+    web_config_path = os.path.join(os.path.dirname(__file__), 'firebase-web-config.json')
+    if os.path.exists(web_config_path):
+        try:
+            with open(web_config_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading firebase-web-config.json: {e}")
+    
+    # Fallback to Environment Variables (for Production/Vercel)
+    return {
+        "apiKey": os.environ.get('FIREBASE_API_KEY', ""),
+        "authDomain": os.environ.get('FIREBASE_AUTH_DOMAIN', ""),
+        "databaseURL": os.environ.get('FIREBASE_DATABASE_URL', ""),
+        "projectId": os.environ.get('FIREBASE_PROJECT_ID', ""),
+        "storageBucket": os.environ.get('FIREBASE_STORAGE_BUCKET', ""),
+        "messagingSenderId": os.environ.get('FIREBASE_MESSAGING_SENDER_ID', ""),
+        "appId": os.environ.get('FIREBASE_APP_ID', ""),
+        "measurementId": os.environ.get('FIREBASE_MEASUREMENT_ID', "")
+    }
+
+FIREBASE_WEB_CONFIG = load_firebase_web_config()
 
 # Helper to get or create default user
 import math
@@ -295,7 +321,74 @@ def login():
         else:
             flash('Invalid username or password', 'danger')
             
-    return render_template('login.html')
+    return render_template('login.html', firebase_config=FIREBASE_WEB_CONFIG)
+
+@app.route('/api/auth/google', methods=['POST'])
+def google_auth():
+    if not USE_FIREBASE:
+        return jsonify({'success': False, 'message': 'Firebase is not configured on the server.'})
+
+    data = request.json
+    id_token = data.get('idToken')
+
+    if not id_token:
+        return jsonify({'success': False, 'message': 'No ID token provided.'})
+
+    try:
+        # Verify the ID token using Firebase Admin SDK
+        decoded_token = firebase_auth.verify_id_token(id_token)
+        uid = decoded_token['uid']
+        email = decoded_token.get('email')
+        name = decoded_token.get('name', 'Google User')
+        picture = decoded_token.get('picture')
+
+        if not email:
+            return jsonify({'success': False, 'message': 'Email not provided by Google.'})
+
+        # Check if user exists by email
+        user = DataManager.get_user_by_email(email)
+        
+        is_new_user = False
+        if not user:
+            # Create new user
+            is_new_user = True
+            # Create a unique username from the email if name is taken
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            while DataManager.get_user_by_username(username):
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            user_data = {
+                'username': username,
+                'email': email,
+                'password_hash': 'GOOGLE_AUTH', # Placeholder
+                'xp': 0,
+                'level': 1,
+                'hearts': 5,
+                'diamonds': 500,
+                'streak': 0,
+                'weekly_xp': 0,
+                'avatar': picture,
+                'created_at': datetime.utcnow()
+            }
+            user_id = DataManager.save_user(user_data)
+            user = DataManager.get_user_by_id(user_id)
+        
+        # Log the user in
+        session['user_id'] = user.id
+        if is_new_user:
+            session['is_new_user'] = True
+            flash(f'Welcome to SayBIM, {user.username}!', 'success')
+            return jsonify({'success': True, 'redirect': url_for('home', tutorial='true')})
+        else:
+            flash(f'Welcome back, {user.username}!', 'success')
+            return jsonify({'success': True, 'redirect': url_for('home')})
+
+    except Exception as e:
+        print(f"Error in Google Auth: {e}")
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -327,7 +420,9 @@ def signup():
                 user_id = DataManager.save_user(user_data)
                 session['user_id'] = user_id
             else:
-                new_user = User(username=username, email=email)
+                new_user = User()
+                new_user.username = username
+                new_user.email = email
                 new_user.set_password(password)
                 new_user.xp = 0
                 new_user.level = 1
@@ -337,10 +432,11 @@ def signup():
                 db.session.commit()
                 session['user_id'] = new_user.id
             
+            session['is_new_user'] = True
             flash('Account created successfully!', 'success')
-            return redirect(url_for('home'))
+            return redirect(url_for('home', tutorial='true'))
             
-    return render_template('signup.html')
+    return render_template('signup.html', firebase_config=FIREBASE_WEB_CONFIG)
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

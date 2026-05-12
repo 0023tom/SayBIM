@@ -522,8 +522,6 @@ body {
 }
 
 @keyframes badgePop {
-    0% { transform: scale(0); }
-    100% { transform: scale(1); }
 }
 
 .clear-sequence-btn {
@@ -601,8 +599,6 @@ body {
 }
 
 @keyframes feedbackSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
 }
 
 .feedback-overlay.correct {
@@ -669,8 +665,6 @@ body {
 }
 
 @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Practice Grid */
@@ -950,8 +944,6 @@ body {
     border: 1px solid #90cdf4;
 }
 
-#quiz-powerup-container {
-}
 
 #toast-container {
     position: fixed;
@@ -977,13 +969,9 @@ body {
 }
 
 @keyframes fadeInToast {
-    0% { opacity: 0; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes fadeOutToast {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.1); }
 }
 
 .float-msg {
@@ -1380,8 +1368,6 @@ input:checked + .premium-slider:before {
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
 }
 
 /* Inventory Cards */
@@ -1455,14 +1441,9 @@ input:checked + .premium-slider:before {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
 }
 
 @keyframes slideInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Badge Celebration Styles */
@@ -1475,9 +1456,6 @@ input:checked + .premium-slider:before {
 }
 
 @keyframes celebrationPop {
-    0% { transform: scale(0.5) translateY(100px); opacity: 0; }
-    50% { transform: scale(1.05) translateY(-10px); }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .badge-glow-effect {
@@ -1493,8 +1471,6 @@ input:checked + .premium-slider:before {
 }
 
 @keyframes pulseGlow {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
 }
 
 #confetti-container {
@@ -1518,11 +1494,6 @@ input:checked + .premium-slider:before {
 }
 
 @keyframes confettiFall {
-    0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 1; }
-    25% { transform: translateY(25vh) rotate(90deg) translateX(20px); }
-    50% { transform: translateY(50vh) rotate(180deg) translateX(-20px); }
-    75% { transform: translateY(75vh) rotate(270deg) translateX(20px); }
-    100% { transform: translateY(100vh) rotate(360deg) translateX(0); opacity: 0; }
 }
 
 
@@ -2232,4 +2203,120 @@ input:checked + .premium-slider:before {
     .nav-text {
         font-size: 0.6rem;
     }
+}
+/* Custom Driver.js Styling for SayBIM */
+.driver-popover {
+    border-radius: var(--radius-lg) !important;
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif !important;
+    border: 2px solid #e2e8f0 !important;
+    box-shadow: var(--shadow-medium) !important;
+    background: white !important;
+}
+
+.driver-popover-title {
+    font-weight: 800 !important;
+    color: var(--text-primary) !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 8px !important;
+}
+
+.driver-popover-description {
+    color: var(--text-secondary) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+}
+
+.driver-popover-next-btn, .driver-popover-done-btn {
+    background: var(--accent-blue) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    text-shadow: none !important;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3) !important;
+}
+
+.driver-popover-next-btn:hover, .driver-popover-done-btn:hover {
+    background: #5a67d8 !important;
+}
+
+.driver-popover-prev-btn {
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.driver-popover-prev-btn:hover {
+    background: #f1f5f9 !important;
+}
+
+.driver-popover-close-btn {
+    color: #cbd5e1 !important;
+}
+
+.driver-popover-close-btn:hover {
+    color: var(--text-secondary) !important;
+}
+
+/* Ensure Modals and SweetAlerts appear above Driver.js tutorial overlay */
+.swal2-container { z-index: 200000 !important; }
+#badge-celebration-modal { z-index: 200000 !important; }
+
+/* Google Sign-In Button Styles */
+.google-btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 12px;
+    border: 2px solid #eef2f7;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 15px 0 5px 0;
+}
+
+.google-btn:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.google-btn i {
+    font-size: 1.3rem;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.auth-divider::before {
+    margin-right: 16px;
+}
+
+.auth-divider::after {
+    margin-left: 16px;
 }

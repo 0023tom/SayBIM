@@ -261,7 +261,10 @@ class DataManager:
                 'completed_at': datetime.utcnow()
             })
         else:
-            res = QuizResult(user_id=user_id, score=score, total_questions=total)
+            res = QuizResult()
+            res.user_id = user_id
+            res.score = score
+            res.total_questions = total
             db.session.add(res)
             db.session.commit()
 
@@ -274,7 +277,9 @@ class DataManager:
                 'awarded_at': datetime.utcnow()
             })
         else:
-            badge = UserBadge(user_id=user_id, badge_name=badge_name)
+            badge = UserBadge()
+            badge.user_id = user_id
+            badge.badge_name = badge_name
             db.session.add(badge)
             db.session.commit()
 

@@ -20,6 +20,7 @@ Thumbs.db
 # Database and Secrets
 app.db
 firebase-adminsdk.json
+firebase-web-config.json
 
 # Large Data & Logs
 Logs/
