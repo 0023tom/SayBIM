@@ -22,12 +22,14 @@
 
                   {% with messages = get_flashed_messages(with_categories=true) %}
                   {% if messages %}
-                  {% for category, message in messages %}
-                  <div class="alert alert-{{ category }}">
-                        {{ message }}
-                        <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                  <div class="alert-container">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                              {{ message }}
+                              <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                        </div>
+                        {% endfor %}
                   </div>
-                  {% endfor %}
                   {% endif %}
                   {% endwith %}
 

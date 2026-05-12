@@ -22,12 +22,14 @@
 
                   {% with messages = get_flashed_messages(with_categories=true) %}
                   {% if messages %}
-                  {% for category, message in messages %}
-                  <div class="alert alert-{{ category }}">
-                        {{ message }}
-                        <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                  <div class="alert-container">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                              {{ message }}
+                              <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                        </div>
+                        {% endfor %}
                   </div>
-                  {% endfor %}
                   {% endif %}
                   {% endwith %}
 
@@ -66,7 +68,7 @@
 
                   <div class="auth-footer">
                         <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
-                        <p style="margin-top: 10px;"><a href="{{ url_for('forgot_password') }}" style="color: var(--text-secondary); font-size: 0.9em;">Forgot Password?</a></p>
+                        <p style="margin-top: 12px;"><a href="{{ url_for('forgot_password') }}" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Forgot Password?</a></p>
                   </div>
             </div>
       </div>
