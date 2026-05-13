@@ -2146,17 +2146,23 @@ async function predictGesture() {
             if (currentTarget) {
                 prompt.innerHTML = `
                     <div style="text-align:center;">
-                        <div style="margin-bottom: 5px; opacity: 0.9;">Sign the letter: <strong>${currentTarget}</strong></div>
-                        Detected: <span style="font-size: 2em; color: var(--accent-blue); display:block;">${predictedAction}</span>
-                        <small>Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                        <div style="margin-bottom: 8px; opacity: 0.85; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Sign the letter: <strong style="color: white; font-size: 1.2em;">${currentTarget}</strong></div>
+                        <div style="font-size: 0.85em; opacity: 0.8;">Detected:</div>
+                        <span style="font-size: 2.5em; font-weight: 800; color: #60a5fa; display:block; line-height: 1.1; margin: 5px 0; text-shadow: 0 0 15px rgba(96, 165, 250, 0.4);">${predictedAction}</span>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 4px 8px; display: inline-block; margin-top: 5px;">
+                            <small style="opacity: 0.9; font-weight: 600;">Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                        </div>
                     </div>
                 `;
             } else if (!practiceSession.active) {
                 prompt.innerHTML = `
                     <div style="text-align:center;">
-                        <strong>Live Detection</strong><br>
-                        Detected: <span style="font-size: 2em; color: var(--accent-blue); display:block;">${predictedAction}</span>
-                        <small>Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                        <div style="margin-bottom: 8px; opacity: 0.85; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;"><strong style="color: white; font-size: 1.2em;">Live Detection</strong></div>
+                        <div style="font-size: 0.85em; opacity: 0.8;">Detected:</div>
+                        <span style="font-size: 2.5em; font-weight: 800; color: #60a5fa; display:block; line-height: 1.1; margin: 5px 0; text-shadow: 0 0 15px rgba(96, 165, 250, 0.4);">${predictedAction}</span>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 4px 8px; display: inline-block; margin-top: 5px;">
+                            <small style="opacity: 0.9; font-weight: 600;">Confidence: ${(confidence * 100).toFixed(0)}%</small>
+                        </div>
                     </div>
                 `;
             }

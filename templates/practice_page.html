@@ -70,22 +70,24 @@
 
         #camera-prompt {
             position: absolute;
-            bottom: 40px;
-            left: -50%; /* Positioned over the camera panel on desktop */
+            bottom: 80px;
+            left: -70%; /* Positioned over the camera panel on desktop */
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.75);
+            background: rgba(15, 23, 42, 0.85);
             color: white;
-            padding: 12px 24px;
-            border-radius: 14px;
+            padding: 18px 30px;
+            border-radius: 20px;
             text-align: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 100;
             width: auto;
-            min-width: 200px;
-            max-width: 300px;
-            border: 1px solid rgba(255,255,255,0.15);
-            font-size: 0.9em;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            min-width: 220px;
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
         }
 
         .practice-active-header {
@@ -144,7 +146,7 @@
             </div>
 
             <!-- Content Panel (Right on desktop, Bottom on mobile) -->
-            <div id="practice-content-side" style="flex: 1; background: #f8fafc; display: flex; flex-direction: column; border-left: 1px solid #e2e8f0; overflow: hidden;">
+            <div id="practice-content-side" style="flex: 1; background: #f8fafc; display: flex; flex-direction: column; border-left: 1px solid #e2e8f0; overflow: visible;">
 
                 <!-- Selection Panel (shown before user picks a sign) -->
                 <div id="practice-selection-panel" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
@@ -161,7 +163,7 @@
                 </div>
 
                 <!-- Reference Panel (shown after user picks a sign) -->
-                <div id="practice-reference-panel" style="display: none; flex-direction: column; width: 100%; height: 100%; align-items: center; justify-content: center; padding: 30px; overflow-y: auto; background: #f8fafc; position: relative;">
+                <div id="practice-reference-panel" style="display: none; flex-direction: column; width: 100%; flex: 1; align-items: center; justify-content: center; padding: 30px; background: #f8fafc; position: relative; box-sizing: border-box;">
                     
                     <!-- Camera Prompt (Moved here for side-by-side layout) -->
                     <div id="camera-prompt" style="display: none;">
