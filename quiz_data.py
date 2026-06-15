@@ -1260,6 +1260,10 @@ def generate_topic_quiz(topic_id, lesson_id):
                         "options": options_objs,
                         "hide_option_text": True if not q["media_url"] else False,
                         "correct_option": q["target"],
+<<<<<<< HEAD
+=======
+                        "hint": SIGN_HINTS.get(q["target"], {}).get("conceptual", "Topic 3 lesson content.")
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                     })
             return final_qs
             

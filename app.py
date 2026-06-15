@@ -944,8 +944,14 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 @app.route('/api/feedback', methods=['POST'])
 def handle_feedback():
     user = get_current_user()
+<<<<<<< HEAD
     data = request.json
     text = data.get('feedback', '')
+=======
+    
+    # Form data is used instead of JSON to handle file uploads
+    text = request.form.get('feedback', '')
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     
     if not text:
         return jsonify({'success': False, 'message': 'No feedback provided'}), 400
@@ -960,6 +966,7 @@ def handle_feedback():
     message += f"💬 *Message:* {text}\n"
     message += f"⏰ *Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     
+<<<<<<< HEAD
     # Send to Telegram
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -970,11 +977,51 @@ def handle_feedback():
         }
         res = requests.post(url, json=payload, timeout=10)
         
+=======
+    # Retrieve optional file attachment
+    uploaded_file = request.files.get('file')
+    
+    try:
+        if uploaded_file and uploaded_file.filename != '':
+            # Verify file size (10MB limit)
+            uploaded_file.seek(0, os.SEEK_END)
+            file_size = uploaded_file.tell()
+            uploaded_file.seek(0)
+            
+            if file_size > 10 * 1024 * 1024:
+                return jsonify({'success': False, 'message': 'File size exceeds 10MB limit'}), 400
+                
+            # Send file to Telegram using sendDocument
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+            files = {
+                'document': (secure_filename(uploaded_file.filename), uploaded_file.read(), uploaded_file.content_type)
+            }
+            payload = {
+                "chat_id": TELEGRAM_CHAT_ID,
+                "caption": message,
+                "parse_mode": "Markdown"
+            }
+            res = requests.post(url, data=payload, files=files, timeout=20)
+        else:
+            # Send text message to Telegram
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            payload = {
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "Markdown"
+            }
+            res = requests.post(url, json=payload, timeout=10)
+            
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
         if res.status_code == 200:
             return jsonify({'success': True, 'message': 'Feedback sent to Telegram!'})
         else:
             print(f"Telegram API Error: {res.text}")
+<<<<<<< HEAD
             return jsonify({'success': False, 'message': 'Could not reach Telegram API'}), 500
+=======
+            return jsonify({'success': False, 'message': f'Telegram API Error: {res.status_code}'}), 500
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
             
     except Exception as e:
         print(f"Feedback error: {e}")

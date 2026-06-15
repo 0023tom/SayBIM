@@ -171,6 +171,29 @@ body {
     text-align: center;
 }
 
+<<<<<<< HEAD
+=======
+/* Sidebar Footer / Copyright */
+.sidebar-footer {
+    margin-top: auto;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #edf2f7;
+    transition: all 0.3s ease;
+}
+
+.copyright-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 700;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    display: none;
+}
+
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 /* Main Content */
 .main-content {
     flex: 1;
@@ -1752,6 +1775,13 @@ input:checked + .premium-slider:before {
         display: none !important; /* Hide user profile/toggle in bottom nav */
     }
 
+<<<<<<< HEAD
+=======
+    .sidebar-footer {
+        display: none !important;
+    }
+
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     .nav-links {
         display: flex;
         width: 100%;

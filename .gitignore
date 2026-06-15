@@ -43,7 +43,11 @@ migrate*.py
 verify_setup.py
 
 # Unused/Legacy Training Directories
+<<<<<<< HEAD
 Model/
 
 # Assistant Scratch Files
 scratch/
+=======
+Model/
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)

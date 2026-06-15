@@ -1605,8 +1605,13 @@ function toggleHint() {
     if (gameState.questions && gameState.questions.length > 0) {
         const currentQ = gameState.questions[gameState.currentQuestionIndex];
         const hintText = hint.querySelector('p');
+<<<<<<< HEAD
         if (hintText && currentQ && currentQ.hint) {
             hintText.innerText = currentQ.hint;
+=======
+        if (hintText && currentQ) {
+            hintText.innerText = currentQ.hint || "Take your time and guess.";
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
         }
     }
 
@@ -1623,6 +1628,78 @@ window.onclick = function (event) {
 }
 
 // Settings Logic
+<<<<<<< HEAD
+=======
+function handleFeedbackFileSelect(input) {
+    const fileInfo = document.getElementById('feedback-file-info');
+    const fileName = document.getElementById('feedback-file-name');
+    const fileSize = document.getElementById('feedback-file-size');
+    const fileIcon = document.getElementById('feedback-file-icon');
+    const uploadArea = document.getElementById('feedback-upload-area');
+
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        
+        // Validate file size (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showFloatMessage("File size exceeds the 10MB limit!", "danger");
+            input.value = ''; // Reset input
+            if (fileInfo) fileInfo.style.display = 'none';
+            return;
+        }
+
+        // Show file info
+        if (fileName) fileName.textContent = file.name;
+        
+        // Format size
+        let sizeText = '';
+        if (file.size < 1024 * 1024) {
+            sizeText = `(${(file.size / 1024).toFixed(1)} KB)`;
+        } else {
+            sizeText = `(${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+        }
+        if (fileSize) fileSize.textContent = sizeText;
+
+        // Change icon based on type
+        if (fileIcon) {
+            if (file.type.startsWith('image/')) {
+                fileIcon.className = 'fas fa-file-image';
+            } else if (file.type.startsWith('video/')) {
+                fileIcon.className = 'fas fa-file-video';
+            } else {
+                fileIcon.className = 'fas fa-file-alt';
+            }
+        }
+
+        if (fileInfo) fileInfo.style.display = 'flex';
+        if (uploadArea) {
+            uploadArea.style.borderColor = 'var(--accent-blue)';
+            uploadArea.style.background = '#ebf8ff';
+        }
+    } else {
+        if (fileInfo) fileInfo.style.display = 'none';
+        if (uploadArea) {
+            uploadArea.style.borderColor = '#cbd5e0';
+            uploadArea.style.background = '#f8faff';
+        }
+    }
+}
+
+function clearFeedbackFile(event) {
+    if (event) event.stopPropagation();
+    const fileInput = document.getElementById('feedback-file');
+    const fileInfo = document.getElementById('feedback-file-info');
+    const uploadArea = document.getElementById('feedback-upload-area');
+    
+    if (fileInput) fileInput.value = '';
+    if (fileInfo) fileInfo.style.display = 'none';
+    if (uploadArea) {
+        uploadArea.style.borderColor = '#cbd5e0';
+        uploadArea.style.background = '#f8faff';
+    }
+}
+
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 function submitFeedback() {
     const feedbackText = document.getElementById('feedback-text');
     const text = feedbackText.value.trim();
@@ -1632,18 +1709,44 @@ function submitFeedback() {
         return;
     }
 
+<<<<<<< HEAD
+=======
+    const fileInput = document.getElementById('feedback-file');
+    const formData = new FormData();
+    formData.append('feedback', text);
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        if (file.size > 10 * 1024 * 1024) {
+            showFloatMessage("File size exceeds the 10MB limit!", "danger");
+            return;
+        }
+        formData.append('file', file);
+    }
+
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     showFloatMessage("Sending feedback...", "info");
 
     fetch('/api/feedback', {
         method: 'POST',
+<<<<<<< HEAD
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback: text })
+=======
+        body: formData
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+<<<<<<< HEAD
                 showFloatMessage("Thank you for your feedback! Sent to developer telegram bot.");
                 feedbackText.value = '';
+=======
+                showFloatMessage("Thank you for your feedback! Sent to our Support Bot.");
+                feedbackText.value = '';
+                clearFeedbackFile();
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                 closeModal('feedback-modal');
                 document.getElementById('feedback-modal').style.display = 'none';
             } else {
@@ -1660,20 +1763,44 @@ function openFeedbackModal() {
     const modal = document.getElementById('feedback-modal');
     modal.classList.add('active');
     modal.style.display = 'flex';
+<<<<<<< HEAD
+=======
+    
+    // Clear inputs and file selection on open
+    const feedbackText = document.getElementById('feedback-text');
+    if (feedbackText) feedbackText.value = '';
+    clearFeedbackFile();
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 }
 
 function showSubMenu(menu) {
     document.getElementById('settings-main-menu').style.display = 'none';
     const prefBlock = document.getElementById('preferences-menu');
     const profBlock = document.getElementById('profile-menu');
+<<<<<<< HEAD
     if (prefBlock) prefBlock.style.display = 'none';
     if (profBlock) profBlock.style.display = 'none';
+=======
+    const faqsBlock = document.getElementById('faqs-menu');
+    const privBlock = document.getElementById('privacy-menu');
+    if (prefBlock) prefBlock.style.display = 'none';
+    if (profBlock) profBlock.style.display = 'none';
+    if (faqsBlock) faqsBlock.style.display = 'none';
+    if (privBlock) privBlock.style.display = 'none';
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 
     if (menu === 'preferences') {
         if (prefBlock) prefBlock.style.display = 'block';
     } else if (menu === 'profile') {
         if (profBlock) profBlock.style.display = 'block';
         renderBadgeEquipUI();
+<<<<<<< HEAD
+=======
+    } else if (menu === 'faqs') {
+        if (faqsBlock) faqsBlock.style.display = 'block';
+    } else if (menu === 'privacy') {
+        if (privBlock) privBlock.style.display = 'block';
+>>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     } else {
         document.getElementById('settings-main-menu').style.display = 'block';
     }
