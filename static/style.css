@@ -171,8 +171,6 @@ body {
     text-align: center;
 }
 
-<<<<<<< HEAD
-=======
 /* Sidebar Footer / Copyright */
 .sidebar-footer {
     margin-top: auto;
@@ -192,8 +190,6 @@ body {
 .sidebar.collapsed .sidebar-footer {
     display: none;
 }
-
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 /* Main Content */
 .main-content {
     flex: 1;
@@ -1775,13 +1771,9 @@ input:checked + .premium-slider:before {
         display: none !important; /* Hide user profile/toggle in bottom nav */
     }
 
-<<<<<<< HEAD
-=======
     .sidebar-footer {
         display: none !important;
     }
-
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     .nav-links {
         display: flex;
         width: 100%;

@@ -70,20 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Bind click listener for Practice Nav directly
             if (practiceNav) {
-<<<<<<< HEAD
-                practiceNav.addEventListener('click', function onPracticeClick() {
-                    // Ensure we only trigger when on the right step
-                    if (localStorage.getItem('saybim_tutorial_step') !== 'home_intro') return;
-
-=======
                 practiceNav.addEventListener('click', function onPracticeClick(e) {
                     // Ensure we only trigger when on the right step
                     if (localStorage.getItem('saybim_tutorial_step') !== 'home_intro') return;
 
                     e.preventDefault();
                     switchSection('practice');
-
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                     isProgrammatic = true;
                     driverObj.destroy();
                     isProgrammatic = false;
@@ -107,20 +99,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         // Bind click listener for Alphabets Card directly
                         if (alphabetsCard) {
-<<<<<<< HEAD
-                            alphabetsCard.addEventListener('click', function onAlphaClick() {
-=======
                             alphabetsCard.addEventListener('click', function onAlphaClick(e) {
                                 e.preventDefault();
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                                 markStepDone('practice_alphabets');
                                 isProgrammatic = true;
                                 driverObj.destroy();
                                 isProgrammatic = false;
-<<<<<<< HEAD
-=======
                                 window.location.href = '/practice?type=alphabets';
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                             }, { once: true });
                         }
                     }, 500);
@@ -205,19 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 },
                 {
-<<<<<<< HEAD
-                    element: '#practice-camera-container',
-                    popover: {
-                        title: 'Your Turn!',
-                        description: 'Try signing the letter to the camera! Once you get it right, you will earn your first badge.',
-                        side: "bottom",
-=======
                     element: '#practice-main-area',
                     popover: {
                         title: 'Your Turn!',
                         description: 'Try signing the letter to the camera! Once you get it right, you will earn your first badge.',
                         side: "top",
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                         align: 'center',
                         showButtons: [] // User must earn the badge, no buttons
                     }
@@ -288,22 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Bind listener for Topic 1 Card
                 if (topic1Card) {
-<<<<<<< HEAD
-                    topic1Card.addEventListener('click', () => {
-                        if (driverObj.getActiveIndex() === 3) { // "Topic 1" step
-=======
                     topic1Card.addEventListener('click', (e) => {
                         if (driverObj.getActiveIndex() === 3) { // "Topic 1" step
                             e.preventDefault();
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                             markStepDone('topic_lessons');
                             window.isProgrammatic = true;
                             driverObj.destroy();
                             window.isProgrammatic = false;
-<<<<<<< HEAD
-=======
                             window.location.href = '/topic/1';
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                         }
                     }, { once: true });
                 }
@@ -411,24 +380,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const lesson1Btn = document.querySelector('.lesson-step:first-child');
             
             if (lesson1Btn) {
-<<<<<<< HEAD
-                lesson1Btn.addEventListener('click', () => {
-=======
                 lesson1Btn.addEventListener('click', (e) => {
                     if (localStorage.getItem('saybim_tutorial_step') !== 'topic_lessons') return;
                     e.preventDefault();
                     const targetUrl = lesson1Btn.getAttribute('href');
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                     markStepDone('quiz_first');
                     window.isProgrammatic = true;
                     driverObj.destroy();
                     window.isProgrammatic = false;
-<<<<<<< HEAD
-=======
                     if (targetUrl && targetUrl !== '#') {
                         window.location.href = targetUrl;
                     }
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                 }, { once: true });
             }
 

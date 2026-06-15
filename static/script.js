@@ -1605,13 +1605,8 @@ function toggleHint() {
     if (gameState.questions && gameState.questions.length > 0) {
         const currentQ = gameState.questions[gameState.currentQuestionIndex];
         const hintText = hint.querySelector('p');
-<<<<<<< HEAD
-        if (hintText && currentQ && currentQ.hint) {
-            hintText.innerText = currentQ.hint;
-=======
         if (hintText && currentQ) {
             hintText.innerText = currentQ.hint || "Take your time and guess.";
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
         }
     }
 
@@ -1628,8 +1623,6 @@ window.onclick = function (event) {
 }
 
 // Settings Logic
-<<<<<<< HEAD
-=======
 function handleFeedbackFileSelect(input) {
     const fileInfo = document.getElementById('feedback-file-info');
     const fileName = document.getElementById('feedback-file-name');
@@ -1698,8 +1691,6 @@ function clearFeedbackFile(event) {
         uploadArea.style.background = '#f8faff';
     }
 }
-
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 function submitFeedback() {
     const feedbackText = document.getElementById('feedback-text');
     const text = feedbackText.value.trim();
@@ -1709,8 +1700,6 @@ function submitFeedback() {
         return;
     }
 
-<<<<<<< HEAD
-=======
     const fileInput = document.getElementById('feedback-file');
     const formData = new FormData();
     formData.append('feedback', text);
@@ -1723,30 +1712,18 @@ function submitFeedback() {
         }
         formData.append('file', file);
     }
-
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     showFloatMessage("Sending feedback...", "info");
 
     fetch('/api/feedback', {
         method: 'POST',
-<<<<<<< HEAD
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: text })
-=======
         body: formData
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-<<<<<<< HEAD
-                showFloatMessage("Thank you for your feedback! Sent to developer telegram bot.");
-                feedbackText.value = '';
-=======
                 showFloatMessage("Thank you for your feedback! Sent to our Support Bot.");
                 feedbackText.value = '';
                 clearFeedbackFile();
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
                 closeModal('feedback-modal');
                 document.getElementById('feedback-modal').style.display = 'none';
             } else {
@@ -1763,44 +1740,32 @@ function openFeedbackModal() {
     const modal = document.getElementById('feedback-modal');
     modal.classList.add('active');
     modal.style.display = 'flex';
-<<<<<<< HEAD
-=======
-    
     // Clear inputs and file selection on open
     const feedbackText = document.getElementById('feedback-text');
     if (feedbackText) feedbackText.value = '';
     clearFeedbackFile();
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 }
 
 function showSubMenu(menu) {
     document.getElementById('settings-main-menu').style.display = 'none';
     const prefBlock = document.getElementById('preferences-menu');
     const profBlock = document.getElementById('profile-menu');
-<<<<<<< HEAD
-    if (prefBlock) prefBlock.style.display = 'none';
-    if (profBlock) profBlock.style.display = 'none';
-=======
     const faqsBlock = document.getElementById('faqs-menu');
     const privBlock = document.getElementById('privacy-menu');
     if (prefBlock) prefBlock.style.display = 'none';
     if (profBlock) profBlock.style.display = 'none';
     if (faqsBlock) faqsBlock.style.display = 'none';
     if (privBlock) privBlock.style.display = 'none';
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
 
     if (menu === 'preferences') {
         if (prefBlock) prefBlock.style.display = 'block';
     } else if (menu === 'profile') {
         if (profBlock) profBlock.style.display = 'block';
         renderBadgeEquipUI();
-<<<<<<< HEAD
-=======
     } else if (menu === 'faqs') {
         if (faqsBlock) faqsBlock.style.display = 'block';
     } else if (menu === 'privacy') {
         if (privBlock) privBlock.style.display = 'block';
->>>>>>> e5f82b6 (Adding privacy and FAQs related feature)
     } else {
         document.getElementById('settings-main-menu').style.display = 'block';
     }
